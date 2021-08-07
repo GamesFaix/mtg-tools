@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "mtg-inventory-search", "mtg-inventory-search\mtg-inventory-search.fsproj", "{7090E897-803C-4309-9CA7-CE24F245BE86}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7090E897-803C-4309-9CA7-CE24F245BE86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7090E897-803C-4309-9CA7-CE24F245BE86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7090E897-803C-4309-9CA7-CE24F245BE86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7090E897-803C-4309-9CA7-CE24F245BE86}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB067332-70D7-4E6A-8427-18A34177F1CB}
+	EndGlobalSection
+EndGlobal
