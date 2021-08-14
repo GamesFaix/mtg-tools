@@ -8,7 +8,7 @@ open System.Globalization
 open System.Linq
 
 // https://scryfall.com/docs/syntax
-let scryfallQuery = "o:'each player draw'"
+let scryfallQuery = "o:'each player draws'"
 
 let searchScryfall query = 
     async {
@@ -49,6 +49,7 @@ let loadInventory () =
     use csv = new CsvReader(reader, config)
     csv.Read() |> ignore
     csv.GetRecords<InventoryCard>()
+    |> Seq.distinctBy (fun x -> x.name)
     |> Seq.toList
 
 [<EntryPoint>]
@@ -60,22 +61,21 @@ let main _ =
             Enumerable.Join(
                 results,
                 inventory,
-                (fun x -> (x.Name.ToLowerInvariant(), x.Set.ToLowerInvariant())),
-                (fun y -> (y.name.ToLowerInvariant(), y.set.ToLowerInvariant())),
+                (fun x -> x.Name.ToLowerInvariant()),
+                (fun y -> y.name.ToLowerInvariant()),
                 (fun x y -> (x, y))
             )
 
         //printfn "Found %i cards" result.TotalCards
 
-        //for c in result.Data do
+        //for c in results do
         //    printfn "\t%s" c.Name
 
         //for c in inventory |> Seq.take 10 do
         //    printfn "\t%s %s" c.set c.name
-
             
         for (x,y) in joined do
-            printfn "\t%s %s %s" x.Set x.Name x.ManaCost
+            printfn "\t%s %s" x.Name x.ManaCost
         
         Console.Read() |> ignore
         return 0 // return an integer exit code
