@@ -45,15 +45,29 @@ let mergeSetData
     rawInventory
     |> List.map (fun x ->
         match index.TryGetValue(x.Set) with
-        | (true, set) -> { x with Set = $"{set.Name} ({set.Code.ToUpperInvariant()})" }
-        | _ -> x
+        | (true, set) -> (x, Some set)
+        | _ -> (x, None)
     )
 
 type InventoryCard = string * CardEdition list
 
-let groupEditions (rawInventory: Inventory.CardEdition list) : InventoryCard list =
-    rawInventory
-    |> List.groupBy (fun x -> x.Name)
+let groupEditions (inventoryWithSets: (Inventory.CardEdition * ScryfallSet option) list) : InventoryCard list =
+    inventoryWithSets
+    |> List.groupBy (fun (edition, set) -> edition.Name)
+    |> List.map (fun (name, editions) ->
+        let editions =
+            editions
+            |> List.sortBy (fun (_, set) ->
+                set
+                |> Option.bind (fun x -> x.ReleaseDate |> Option.ofNullable)
+                |> Option.defaultValue DateTime.MaxValue)
+            |> List.map (fun (edition, set) ->
+                match set with
+                | Some s -> { edition with Set = $"{s.Name} ({s.Code.ToUpperInvariant()})" }
+                | None -> edition
+            )
+        (name, editions)
+    )
 
 let joinResults
     (scryfallResults: ScryfallCard list)
