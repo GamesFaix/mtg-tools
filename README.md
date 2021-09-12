@@ -10,20 +10,22 @@ Command line utility for querying Magic the Gathering collections. Joins search 
     * Set
 2. Open `appsettings.json` and set `InventoryPath` to the location of your inventory CSV file.
 3. Add the app directory to the `PATH` environment variable, so it can be used from the command line easily.
-4. Run `scry -q="<your-query>"`, where `<your-query>` is any query using [Scryfall query syntax](https://scryfall.com/docs/syntax).
+4. Run `scry -q <your-query>`, where `<your-query>` is any query using [Scryfall query syntax](https://scryfall.com/docs/syntax).
 
 ### Arguments
 
 * `-q` or `--query` - a Scryfall query
 * `-i` or `--inventory` - the path to an inventory CSV file. (Setting this permanently in appsettings.json is more convenient.)
 
+See the [documentation](https://docs.microsoft.com/en-us/dotnet/core/extensions/configuration-providers#command-line-configuration-provider) for .NET Core command line configuration provier.
+
 ### Example output
 
 ```
-scry -q="mana"
+scry -q mana
 Loading set information from Scryfall...
   Found 698 results
-Searching Scryfall for "mana"...
+Searching Scryfall for mana...
   Found 54 results
 Loading inventory from C:\Users\NBolas\Documents\inventory.csv...
   Found 7088 editions, and 15460 total cards.
