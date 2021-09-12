@@ -1,15 +1,35 @@
 ﻿module GamesFaix.MtgInventorySearch.Program
 
 open System
+open System.Collections.Generic
+open System.IO
 open System.Linq
 open System.Text
+open Microsoft.Extensions.Configuration
 open GamesFaix.MtgInventorySearch.Inventory
 type ScryfallCard = ScryfallApi.Client.Models.Card
 
-// https://scryfall.com/docs/syntax
-let scryfallQuery = "t:cat c:white"
+type Settings = {
+    Query: string // https://scryfall.com/docs/syntax
+    InventoryPath: string
+}
 
-let inventoryPath = sprintf "%s/inventory1 - main.csv" (Environment.GetFolderPath(Environment.SpecialFolder.Desktop))
+let configure args =
+    let argMap = Dictionary<string, string>()
+    argMap.Add("-i", "InventoryPath")
+    argMap.Add("--inventory", "InventoryPath")
+    argMap.Add("-q", "Query")
+    argMap.Add("--query", "Query")
+
+    let config =
+        ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional = false, reloadOnChange = false)
+            .AddCommandLine(args, argMap)
+            .Build()
+    {
+        Query = config.["Query"]
+        InventoryPath = Environment.ExpandEnvironmentVariables(config.["InventoryPath"])
+    }
 
 let joinResults (scryfallResults: ScryfallCard list) (fullInventory: Inventory.Card list) =
     Enumerable.Join(
@@ -33,14 +53,16 @@ let formatCardOutput (scryfallCard: ScryfallCard, inventoryCard: Inventory.Card)
     sb.ToString()
 
 [<EntryPoint>]
-let main _ =
+let main args =
     async {
-        printfn $"Searching Scryfall for \"{scryfallQuery}\"..."
-        let! scryfallResults = Scryfall.search scryfallQuery
+        let settings = configure args
+
+        printfn $"Searching Scryfall for \"{settings.Query}\"..."
+        let! scryfallResults = Scryfall.search settings.Query
         printfn $"  Found {scryfallResults.Length} results"
 
-        printfn "Loading inventory..."
-        let fullInventory = Inventory.load inventoryPath
+        printfn $"Loading inventory from {settings.InventoryPath}..."
+        let fullInventory = Inventory.load settings.InventoryPath
         printfn "  Found %i distinct cards, %i editions, and %i total cards."
             fullInventory.Length
             (fullInventory |> Seq.sumBy (fun c -> c.Editions.Length))
