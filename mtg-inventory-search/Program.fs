@@ -2,7 +2,6 @@
 
 open System
 open System.Collections.Generic
-open System.IO
 open System.Linq
 open System.Text
 open Microsoft.Extensions.Configuration
@@ -26,10 +25,16 @@ let configure args =
             .AddJsonFile("appsettings.json", optional = false, reloadOnChange = false)
             .AddCommandLine(args, argMap)
             .Build()
-    {
+
+    let settings = {
         Query = config.["Query"]
         InventoryPath = Environment.ExpandEnvironmentVariables(config.["InventoryPath"])
     }
+
+    if String.IsNullOrWhiteSpace(settings.InventoryPath) then failwith $"{nameof(settings.InventoryPath)} cannot be blank"
+    if String.IsNullOrWhiteSpace(settings.Query) then failwith $"{nameof(settings.Query)} cannot be blank"
+
+    settings
 
 let joinResults (scryfallResults: ScryfallCard list) (fullInventory: Inventory.Card list) =
     Enumerable.Join(
@@ -43,7 +48,7 @@ let joinResults (scryfallResults: ScryfallCard list) (fullInventory: Inventory.C
 
 let formatCardOutput (scryfallCard: ScryfallCard, inventoryCard: Inventory.Card) : string =
     let sb = StringBuilder()
-    sb.AppendLine $"{scryfallCard.Name}" |> ignore
+    sb.AppendLine $"{scryfallCard.Name} ({inventoryCard.Count})" |> ignore
     sb.AppendLine $"  {scryfallCard.ManaCost} {scryfallCard.TypeLine}" |> ignore
 
     for e in inventoryCard.Editions do
@@ -80,7 +85,6 @@ let main args =
         for c in joined do
             printfn "%s" (formatCardOutput c)
 
-        Console.Read() |> ignore
         return 0 // return an integer exit code
     } |> Async.RunSynchronously
 
