@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Scryfall.fs" />
+    <Compile Include="Inventory.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

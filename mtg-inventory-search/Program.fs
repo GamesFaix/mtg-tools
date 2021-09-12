@@ -1,83 +1,64 @@
-﻿open System
-open ScryfallApi.Client.Models
-open System.Net.Http
-open System.IO
-open CsvHelper
-open CsvHelper.Configuration
-open System.Globalization
+﻿module GamesFaix.MtgInventorySearch.Program
+
+open System
 open System.Linq
+open System.Text
+open GamesFaix.MtgInventorySearch.Inventory
+type ScryfallCard = ScryfallApi.Client.Models.Card
 
 // https://scryfall.com/docs/syntax
-let scryfallQuery = "o:'each player draws'"
+let scryfallQuery = "t:cat c:white"
 
-let searchScryfall query = 
-    async {
-        printfn "Searching for %s" query 
+let inventoryPath = sprintf "%s/inventory1 - main.csv" (Environment.GetFolderPath(Environment.SpecialFolder.Desktop))
 
-        use client = new HttpClient()
-        client.BaseAddress <- new Uri("https://api.scryfall.com/")
-        let scryfall = new ScryfallApi.Client.ScryfallApiClient(client)
-
-        let options = SearchOptions()
-
-        let results = ResizeArray()
-
-        let mutable hasMore = true
-        let mutable i = 1
-        while hasMore do
-            printfn "Requesting page %i" i
-            let! result = scryfall.Cards.Search(query, i, options) |> Async.AwaitTask
-            results.AddRange(result.Data)
-            hasMore <- result.HasMore
-            i <- i+1
-            do! Async.Sleep(100) // courtesy throttling
-
-        return results
-    }
-
-type InventoryCard = {
-    count: int
-    name: string
-    set: string    
-}
-
-let loadInventory () =
-    let path = sprintf "%s/inventory1 - main.csv" (Environment.GetFolderPath(Environment.SpecialFolder.Desktop))
-    use reader = File.OpenText path :> TextReader
-    let config = CsvConfiguration(CultureInfo.InvariantCulture)
-    config.HasHeaderRecord <- false
-    use csv = new CsvReader(reader, config)
-    csv.Read() |> ignore
-    csv.GetRecords<InventoryCard>()
-    |> Seq.distinctBy (fun x -> x.name)
+let joinResults (scryfallResults: ScryfallCard list) (fullInventory: Inventory.Card list) =
+    Enumerable.Join(
+        scryfallResults,
+        fullInventory,
+        (fun x -> x.Name.ToLowerInvariant()),
+        (fun y -> y.Name.ToLowerInvariant()),
+        (fun x y -> (x, y))
+    )
     |> Seq.toList
+
+let formatCardOutput (scryfallCard: ScryfallCard, inventoryCard: Inventory.Card) : string =
+    let sb = StringBuilder()
+    sb.AppendLine $"{scryfallCard.Name}" |> ignore
+    sb.AppendLine $"  {scryfallCard.ManaCost} {scryfallCard.TypeLine}" |> ignore
+
+    for e in inventoryCard.Editions do
+        sb.AppendLine $"  {e.Count} {e.Set}" |> ignore
+
+    sb.Remove(sb.Length-1, 1) |> ignore // remove last newline
+    sb.ToString()
 
 [<EntryPoint>]
 let main _ =
     async {
-        let! results = searchScryfall scryfallQuery
-        let inventory = loadInventory ()
-        let joined = 
-            Enumerable.Join(
-                results,
-                inventory,
-                (fun x -> x.Name.ToLowerInvariant()),
-                (fun y -> y.name.ToLowerInvariant()),
-                (fun x y -> (x, y))
-            )
+        printfn $"Searching Scryfall for \"{scryfallQuery}\"..."
+        let! scryfallResults = Scryfall.search scryfallQuery
+        printfn $"  Found {scryfallResults.Length} results"
 
-        //printfn "Found %i cards" result.TotalCards
+        printfn "Loading inventory..."
+        let fullInventory = Inventory.load inventoryPath
+        printfn "  Found %i distinct cards, %i editions, and %i total cards."
+            fullInventory.Length
+            (fullInventory |> Seq.sumBy (fun c -> c.Editions.Length))
+            (fullInventory |> Seq.sumBy (fun c -> c.Count))
 
-        //for c in results do
-        //    printfn "\t%s" c.Name
+        printfn "Joining search results with inventory..."
+        let joined = joinResults scryfallResults fullInventory
+        printfn "  Found %i distinct cards, %i editions, and %i total cards."
+            joined.Length
+            (joined |> Seq.sumBy (fun (_, c) -> c.Editions.Length))
+            (joined |> Seq.sumBy (fun (_, c) -> c.Count))
 
-        //for c in inventory |> Seq.take 10 do
-        //    printfn "\t%s %s" c.set c.name
-            
-        for (x,y) in joined do
-            printfn "\t%s %s" x.Name x.ManaCost
-        
+        printfn ""
+
+        for c in joined do
+            printfn "%s" (formatCardOutput c)
+
         Console.Read() |> ignore
         return 0 // return an integer exit code
     } |> Async.RunSynchronously
-    
+
