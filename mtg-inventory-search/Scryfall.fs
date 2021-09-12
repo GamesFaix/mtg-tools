@@ -5,6 +5,10 @@ open ScryfallApi.Client.Models
 open System.Net.Http
 open System.Linq
 
+let private client = new HttpClient()
+client.BaseAddress <- Uri("https://api.scryfall.com/")
+let private scryfall = ScryfallApi.Client.ScryfallApiClient(client)
+
 let private throttleMilliseconds = 100
 
 let private getAllPages getPage =
@@ -23,10 +27,6 @@ let private getAllPages getPage =
 
 let search query =
     async {
-        use client = new HttpClient()
-        client.BaseAddress <- new Uri("https://api.scryfall.com/")
-        let scryfall = new ScryfallApi.Client.ScryfallApiClient(client)
-
         let options = SearchOptions()
 
         let getPage n =
@@ -36,4 +36,11 @@ let search query =
             }
 
         return! getAllPages getPage
+    }
+
+let getSets () =
+    async {
+        let! results = scryfall.Sets.Get() |> Async.AwaitTask
+
+        return results.Data |> Seq.toList
     }

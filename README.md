@@ -26,4 +26,3 @@ Arguments to `dotnet run` after `--` are passed to the application being run.
 ## Issues
 
 * No support for differentiating alternate art or foil versions in inventory
-* Joining set information to Scryfall would allow more readable output
