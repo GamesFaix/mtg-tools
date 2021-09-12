@@ -6,6 +6,7 @@ open System.Linq
 open System.Text
 open Microsoft.Extensions.Configuration
 open GamesFaix.MtgInventorySearch.Inventory
+open System.Text.RegularExpressions
 type ScryfallCard = ScryfallApi.Client.Models.Card
 
 type Settings = {
@@ -47,14 +48,21 @@ let joinResults (scryfallResults: ScryfallCard list) (fullInventory: Inventory.C
     |> Seq.toList
 
 let formatCardOutput (scryfallCard: ScryfallCard, inventoryCard: Inventory.Card) : string =
+    let name = scryfallCard.Name.PadRight(30)
+    let typeline = scryfallCard.TypeLine.PadRight(25)
+    let cost =
+        Regex.Replace(scryfallCard.ManaCost, "{(\\d|W|U|B|R|G)}", "$1")
+             .PadLeft(6)
+    let count = $"(x{inventoryCard.Count})".PadLeft(5)
+
     let sb = StringBuilder()
-    sb.AppendLine $"{scryfallCard.Name} ({inventoryCard.Count})" |> ignore
-    sb.AppendLine $"  {scryfallCard.ManaCost} {scryfallCard.TypeLine}" |> ignore
+    sb.AppendLine $"{name} {typeline} {cost} {count}" |> ignore
 
     for e in inventoryCard.Editions do
-        sb.AppendLine $"  {e.Count} {e.Set}" |> ignore
+        let set = e.Set
+        let count = $"(x{e.Count})".PadLeft(5)
+        sb.AppendLine $"  {set} {count}" |> ignore
 
-    sb.Remove(sb.Length-1, 1) |> ignore // remove last newline
     sb.ToString()
 
 [<EntryPoint>]
