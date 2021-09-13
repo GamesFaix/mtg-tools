@@ -1,11 +1,11 @@
-﻿module GamesFaix.MtgInventorySearch.Program
+﻿module GamesFaix.MtgTools.Scry.Program
 
 open System
 open System.Collections.Generic
 open System.Linq
 open System.Text
 open Microsoft.Extensions.Configuration
-open GamesFaix.MtgInventorySearch.Inventory
+open GamesFaix.MtgTools.Scry.Inventory
 open System.Text.RegularExpressions
 type ScryfallCard = ScryfallApi.Client.Models.Card
 type ScryfallSet = ScryfallApi.Client.Models.Set
