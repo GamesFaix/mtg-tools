@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.ModelTests
+﻿module GamesFaix.MtgTools.Dck2Cod.Tests.ModelTests
 
 open Xunit
 open GamesFaix.MtgTools.Dck2Cod
@@ -8,7 +8,7 @@ module DeckTests =
     [<Fact>]
     let ``fromShandalar should map deck`` () =
         // Arrange
-        let shandalarDeck = DckParser.parseDeck "./TestData/LordOfFate.dck"
+        let shandalarDeck = "LordOfFate" |> Data.readDckFile |> Dck.parse
 
         let expected : Model.Deck = {
             Name = "Lord of Fate"

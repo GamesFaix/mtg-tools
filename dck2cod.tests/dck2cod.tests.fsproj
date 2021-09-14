@@ -14,8 +14,9 @@
     <None Include="TestData\LordOfFate.dck">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Compile Include="Data.fs" />
     <Compile Include="ModelTests.fs" />
-    <Compile Include="DckParserTests.fs" />
+    <Compile Include="DckTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

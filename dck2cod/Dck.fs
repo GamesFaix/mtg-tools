@@ -1,7 +1,6 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.DckParser
+﻿module GamesFaix.MtgTools.Dck2Cod.Dck
 
 open System
-open System.IO
 open System.Text.RegularExpressions
 open GamesFaix.MtgTools.Dck2Cod.Model
 
@@ -22,7 +21,8 @@ let private parseDeckItem (line: string) : DeckItem =
         }
     | _ -> raise <| FormatException()
 
-let private parseDeckInner (lines : string list) =
+let parse (text: string) =
+    let lines = text.Split("\n") |> List.ofArray
     let titleLine = lines.[0]
 
     let core =
@@ -72,8 +72,3 @@ let private parseDeckInner (lines : string list) =
         RedExtension = redExt
         WhiteExtension = whiteExt
     }
-
-let parseDeck (path: string) : ShandalarDeck =
-    File.ReadAllLines path
-    |> List.ofArray
-    |> parseDeckInner

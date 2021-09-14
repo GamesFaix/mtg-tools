@@ -1,12 +1,12 @@
-module GamesFaix.MtgTools.Dck2Cod.DckParserTests
+module GamesFaix.MtgTools.Dck2Cod.Tests.DckTests
 
 open Xunit
 open GamesFaix.MtgTools.Dck2Cod
 
 [<Fact>]
-let ``parseDeck should parse .dck file with sideboard`` () =
+let ``parse should parse .dck file with sideboard`` () =
     // Arrange
-    let path = "./TestData/LordOfFate.dck"
+    let text = Data.readDckFile "LordOfFate"
 
     let expected : Model.ShandalarDeck = {
         Name = "Lord of Fate"
@@ -47,15 +47,15 @@ let ``parseDeck should parse .dck file with sideboard`` () =
     }
 
     // Act
-    let actual = DckParser.parseDeck path
+    let actual = Dck.parse text
 
     // Assert
     Assert.Equal(expected, actual)
 
 [<Fact>]
-let ``parseDeck should parse .dck file without sideboard`` () =
+let ``parse should parse .dck file without sideboard`` () =
     // Arrange
-    let path = "./TestData/Seer.dck"
+    let text = Data.readDckFile "Seer"
 
     let expected : Model.ShandalarDeck = {
         Name = "Seer"
@@ -83,7 +83,7 @@ let ``parseDeck should parse .dck file without sideboard`` () =
     }
 
     // Act
-    let actual = DckParser.parseDeck path
+    let actual = Dck.parse text
 
     // Assert
     Assert.Equal(expected, actual)

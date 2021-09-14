@@ -14,9 +14,10 @@
     <None Include="README.md" />
     <Compile Include="Utils.fs" />
     <Compile Include="Model.fs" />
-    <Compile Include="DckParser.fs" />
+    <Compile Include="Dck.fs" />
+    <Compile Include="Cod.fs" />
     <Compile Include="Validator.fs" />
-    <Compile Include="CodWriter.fs" />
+    <Compile Include="FileSystem.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
