@@ -3,11 +3,11 @@
 open System
 open System.IO
 
-let title = """
-____    ___  _  _    ___      ___  _____  ____
+let title ="""
+_____    ___  _  _    ___      ___  _____  ____
 (  _ \  / __)( )/ )  (__ \    / __)(  _  )(  _ \
  )(_) )( (__  ) (     / _/   ( (__  )(_)(  )(_) )
-(____/  \___)(_)\_)  (____)   \___)(_____)(____/ """
+(____/  \___)(_)\_)  (____)   \___)(_____)(____/ """.Trim()
 
 let sourceDir =
     "%PROGRAMFILES(x86)%/MagicTG/Decks"
@@ -30,8 +30,6 @@ let processFile (file: string): string list =
         |> Dck.parse
         |> Model.Deck.fromShandalar
 
-    printfn $"  ({deck.Name})"
-
     let cod = Cod.fromDeck deck
     let targetPath = Path.Combine(targetDir, $"{deck.Name}.cod")
 
@@ -43,6 +41,8 @@ let processFile (file: string): string list =
 [<EntryPoint>]
 let main _ =
     writeLine title
+    writeLine ""
+
     let files = Directory.GetFiles sourceDir |> Seq.toList
 
     printfn $"Found {files.Length} deck files in {sourceDir}..."
