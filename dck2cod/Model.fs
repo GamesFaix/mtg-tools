@@ -93,8 +93,8 @@ module DeckItem =
 
         items
         |> List.groupBy getKey
-        |> List.map (fun (key, items) -> {
-            Name = key
+        |> List.map (fun (_, items) -> {
+            Name = items.Head.Name
             Count = items |> aggregate (fun item -> item.Count)
         })
 
@@ -123,6 +123,7 @@ module Deck =
         [
             "will-o-the-wisp", "Will-o'-the-Wisp"
             "manaflare",       "Mana Flare"
+            "Yotian Soldiers", "Yotian Soldier"
         ]
         |> Map.ofList
 

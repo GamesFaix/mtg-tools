@@ -22,8 +22,7 @@ let private parseDeckItem (line: string) : DeckItem =
         }
     | _ -> raise <| FormatException()
 
-let parseDeck (path: string) : ShandalarDeck =
-    let lines = File.ReadAllLines path |> List.ofArray
+let private parseDeckInner (lines : string list) =
     let titleLine = lines.[0]
 
     let core =
@@ -39,47 +38,29 @@ let parseDeck (path: string) : ShandalarDeck =
 
     let isExtensionLine line = Regex.IsMatch(line, "\\d")
 
-    let mutable skipLength = 1 // vNone header
-    let defaultExt =
+    let takeLines length =
         extensionLines
-        |> List.skip skipLength
+        |> List.skip length
         |> List.takeWhile isExtensionLine
         |> List.map parseDeckItem
+
+    let mutable skipLength = 1 // vNone header
+    let defaultExt = takeLines skipLength
 
     skipLength <- skipLength + defaultExt.Length + 1
-    let blackExt =
-        extensionLines
-        |> List.skip skipLength
-        |> List.takeWhile isExtensionLine
-        |> List.map parseDeckItem
+    let blackExt = takeLines skipLength
 
     skipLength <- skipLength + blackExt.Length + 1
-    let blueExt =
-        extensionLines
-        |> List.skip skipLength
-        |> List.takeWhile isExtensionLine
-        |> List.map parseDeckItem
+    let blueExt = takeLines skipLength
 
     skipLength <- skipLength + blueExt.Length + 1
-    let greenExt =
-        extensionLines
-        |> List.skip skipLength
-        |> List.takeWhile isExtensionLine
-        |> List.map parseDeckItem
+    let greenExt = takeLines skipLength
 
     skipLength <- skipLength + greenExt.Length + 1
-    let redExt =
-        extensionLines
-        |> List.skip skipLength
-        |> List.takeWhile isExtensionLine
-        |> List.map parseDeckItem
+    let redExt = takeLines skipLength
 
     skipLength <- skipLength + redExt.Length + 1
-    let whiteExt =
-        extensionLines
-        |> List.skip skipLength
-        |> List.takeWhile isExtensionLine
-        |> List.map parseDeckItem
+    let whiteExt = takeLines skipLength
 
     {
         Name = parseName titleLine
@@ -91,3 +72,8 @@ let parseDeck (path: string) : ShandalarDeck =
         RedExtension = redExt
         WhiteExtension = whiteExt
     }
+
+let parseDeck (path: string) : ShandalarDeck =
+    File.ReadAllLines path
+    |> List.ofArray
+    |> parseDeckInner
