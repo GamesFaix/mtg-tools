@@ -31,10 +31,10 @@ let convertToPdf (html: string) : byte[] Task =
         let converter = HtmlToPdf()
         converter.Options.PdfPageSize <- PdfPageSize.Letter
         converter.Options.PdfPageOrientation <- PdfPageOrientation.Landscape
-        converter.Options.MarginBottom <- 36 // 72pt/in * 1/2in 
-        converter.Options.MarginTop <-    36 // 72pt/in * 1/2in 
-        converter.Options.MarginRight <-  18 // 72pt/in * 1/4in 
-        converter.Options.MarginLeft <-   18 // 72pt/in * 1/4in 
+        converter.Options.MarginBottom <- 36 // 72pt/in * 1/2in
+        converter.Options.MarginTop <-    36 // 72pt/in * 1/2in
+        converter.Options.MarginRight <-  18 // 72pt/in * 1/4in
+        converter.Options.MarginLeft <-   18 // 72pt/in * 1/4in
 
         let doc = converter.ConvertHtmlString html
         let bytes = doc.Save()

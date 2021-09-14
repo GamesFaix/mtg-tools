@@ -40,17 +40,16 @@ let deleteCard (setName : string) (cardName: string) : unit Task =
         printfn "Deleting %s - %s..." setName cardName
         let! cardInfos = MtgDesignReader.getSetCardInfos setName
         let card = cardInfos |> Seq.find (fun c -> c.Name = cardName)
-        let! _ = MtgDesignWriter.deleteCard card        
+        let! _ = MtgDesignWriter.deleteCard card
         printfn "Done."
         return ()
     }
-
 
 let deleteSet (setName : string) : unit Task =
     task {
         printfn "Deleting %s..." setName
         let! cardInfos = MtgDesignReader.getSetCardInfos setName
-        let! _ = MtgDesignWriter.deleteCards cardInfos            
+        let! _ = MtgDesignWriter.deleteCards cardInfos
         printfn "Done."
         return ()
     }
@@ -73,7 +72,7 @@ let private downloadCardImage (card: CardInfo) : unit Task =
         printfn "Downloading %s..." card.Name
         let! bytes = MtgDesignReader.getCardImage card
         let! _ = FileReaderWriter.saveCardImage bytes card
-        return ()    
+        return ()
     }
 
 let downloadSetImages (setName: string) : unit Task =
@@ -101,9 +100,9 @@ let createPdfLayout (setName: string) : unit Task =
         printfn "Creating PDF layout for %s..." setName
         let! cardInfos = MtgDesignReader.getSetCardInfos setName
         let html = Layouter.createHtmlLayout cardInfos
-        let! bytes = Layouter.convertToPdf html 
+        let! bytes = Layouter.convertToPdf html
         let! _ = FileReaderWriter.savePdfLayout bytes setName
-        printfn "Done."       
+        printfn "Done."
         return ()
     }
 

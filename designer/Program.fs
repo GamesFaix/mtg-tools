@@ -4,7 +4,7 @@ open FSharp.Control.Tasks
 open Model
 open System.IO
 
-(* 
+(*
     mtg.design uses server side rendering, so no API available
     Load the page for a set, then parse the DOM to find links to each card in the set to get their IDs.
     Go to the edit page for each set to get structured data about each card, by reading the form
@@ -30,7 +30,7 @@ let main _ =
         let! cards = task {
             if readFromCache
             then match! FileReaderWriter.loadJsonDetails setName with
-                 | Some cards -> 
+                 | Some cards ->
                     printfn "\tFound in cache."
                     return cards
                  | _ -> return! MtgDesignReader.getSetCardDetails setName
@@ -45,22 +45,22 @@ let main _ =
         Auditor.printIssues issues
 
         if writeToCache
-        then 
+        then
             printfn "Caching card details..."
             let! _ = FileReaderWriter.saveJsonDetails cards setName
             ()
         else ()
 
         if writeToWeb
-        then 
+        then
           //  let cards = cards|> List.filter (fun c -> Int32.Parse(c.Number) > 18)
             printfn "Saving card details to mtg.design..."
             let! _ = MtgDesignWriter.saveCards mode cards
             ()
         else ()
 
-        let cardInfos : CardInfo list = cards |> List.map (fun c -> 
-            { 
+        let cardInfos : CardInfo list = cards |> List.map (fun c ->
+            {
                 Name = c.Name
                 Set = c.Set
                 Id = c.Id
@@ -77,7 +77,7 @@ let main _ =
                 printfn "\tDownloading image for %s..." c.Name
                 let! bytes = MtgDesignReader.getCardImage c
                 let! _ = FileReaderWriter.saveCardImage bytes c
-                return ()    
+                return ()
         })
 
         //printfn "Creating HTML layout..."
@@ -91,6 +91,6 @@ let main _ =
         printfn "Done."
         return ()
     } |> block
-    
+
     Console.Read() |> ignore
     0 // return an integer exit code

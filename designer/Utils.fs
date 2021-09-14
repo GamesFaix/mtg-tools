@@ -9,7 +9,7 @@ let concurrentMap<'a, 'b> (f : 'a -> 'b Task) (xs : 'a list) : 'b list Task =
         let! _ = Task.WhenAll tasks
         return tasks |> List.map (fun t -> t.Result)
     }
-    
+
 let mergeUnit (xs : unit list Task) : unit Task =
     task {
         let! _ = xs

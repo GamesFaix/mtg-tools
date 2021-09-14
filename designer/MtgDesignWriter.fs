@@ -30,7 +30,7 @@ let private renderCard (card: CardDetails) (mode: SaverMode) : unit Task =
         query.Add("artist", card.Artist)
         query.Add("power", card.Power)
         query.Add("toughness", card.Toughness)
-        if not <| String.IsNullOrEmpty(card.ArtworkUrl) then query.Add("artwork", card.ArtworkUrl) else ()  
+        if not <| String.IsNullOrEmpty(card.ArtworkUrl) then query.Add("artwork", card.ArtworkUrl) else ()
         query.Add("designer", card.Designer)
         query.Add("card-border", card.Border)
         query.Add("watermark", card.WatermarkUrl)
@@ -44,7 +44,7 @@ let private renderCard (card: CardDetails) (mode: SaverMode) : unit Task =
         then query.Add("land-overlay", card.LandOverlay) else ()
         query.Add("stars", "0") // ???
         query.Add("edit", if mode = SaverMode.Create then "false" else card.Id)
-        if not <| String.IsNullOrEmpty(card.ColorIndicator) then query.Add("color-indicator", card.ColorIndicator) else ()  
+        if not <| String.IsNullOrEmpty(card.ColorIndicator) then query.Add("color-indicator", card.ColorIndicator) else ()
         if not <| String.IsNullOrEmpty(card.PlaneswalkerSize) then query.Add("pw-size", card.PlaneswalkerSize) else ()
         if not <| String.IsNullOrEmpty(card.Rules2) then query.Add("pw-text2", card.Rules2) else ()
         if not <| String.IsNullOrEmpty(card.Rules3) then query.Add("pw-text3", card.Rules3) else ()
@@ -73,7 +73,7 @@ let private shareCard (card : CardDetails) (mode: SaverMode) : unit Task =
         let query = HttpUtility.ParseQueryString("")
         query.Add("edit", if mode = SaverMode.Create then "false" else card.Id)
         query.Add("name", card.Name)
-        
+
         let url = sprintf "https://mtg.design/shared?%s" (query.ToString())
 
         use request = new HttpRequestMessage()
@@ -91,11 +91,11 @@ let private retry (f : unit -> unit Task) : unit Task =
     task {
         let! _ = Policy
                     .Handle<Exception>()
-                    .WaitAndRetryAsync(3, (fun _ -> 
+                    .WaitAndRetryAsync(3, (fun _ ->
                         printfn "Retrying..."
                         TimeSpan.FromSeconds(1.0))
                     )
-                    .ExecuteAsync(f)                    
+                    .ExecuteAsync f
         return ()
     }
 
@@ -114,13 +114,13 @@ let saveCards (mode : SaverMode) (cards : CardDetails list) : unit Task =
     printfn "Saving cards..."
     // Must go in series or the same image gets rendered for each card
     cards |> Utils.seriesMap (saveCard mode) |> Utils.mergeUnit
-    
+
 let deleteCard (card: CardInfo) : unit Task =
     task {
         printfn "\tDeleting %s - %s..." card.Set card.Name
         let url = sprintf "https://mtg.design/set/%s/i/%s/delete" card.Set card.Id
         let! response = Config.client.GetAsync url
-        if response.StatusCode >= HttpStatusCode.BadRequest then failwith "delete error" else ()        
+        if response.StatusCode >= HttpStatusCode.BadRequest then failwith "delete error" else ()
         printfn "\tDeleted %s - %s." card.Set card.Name
         return ()
     }

@@ -7,7 +7,7 @@ open System
 open Model
 open Newtonsoft.Json
 
-let private rootDir = 
+let private rootDir =
     let desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
     sprintf "%s/card-images" desktop
 
@@ -22,7 +22,7 @@ let private saveFileBytes (bytes: byte[]) (path: string): unit Task =
     }
 
 let private saveFileText (text: string) (path: string): unit Task =
-    task {    
+    task {
         createDirectoryIfMissing <| Path.GetDirectoryName path
         return! File.WriteAllTextAsync(path, text)
     }
@@ -32,7 +32,7 @@ let getSetDir (setName: string) : string =
 
 let getCardFileName (card: CardInfo): string =
     sprintf "%s.jpg" (card.Name.Replace(" ", "-").Replace("?", "-"))
-    
+
 let getCardImagePath (card: CardInfo) : string =
     sprintf "%s/%s" (getSetDir card.Set) (getCardFileName card)
 
@@ -40,7 +40,7 @@ let getHtmlLayoutPath (setName: string) : string =
     sprintf "%s/layout.html" (getSetDir setName)
 
 let getPdfLayoutPath (setName: string) : string =
-    sprintf "%s/layout.pdf" (getSetDir setName)    
+    sprintf "%s/layout.pdf" (getSetDir setName)
 
 let getJsonDetailsPath (setName: string) : string =
     sprintf "%s/details.json" (getSetDir setName)
@@ -62,18 +62,18 @@ let saveJsonDetails (cards: CardDetails list) (setName: string) : unit Task =
 
 let loadJsonDetails (setName: string) : CardDetails list option Task =
     task {
-        try 
+        try
             let path = getJsonDetailsPath setName
             let! json = File.ReadAllTextAsync path
             let cards = JsonConvert.DeserializeObject<CardDetails list> json
             return Some cards
         with
-        | _ -> 
+        | _ ->
             return None
     }
 
 let private deleteFolderIfExists (path: string) : unit =
-    if Directory.Exists path 
+    if Directory.Exists path
     then Directory.Delete(path, true)
     else ()
 

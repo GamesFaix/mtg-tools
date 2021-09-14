@@ -32,7 +32,7 @@ let cardsToCenter = [
 let getColors (card: CardDetails) : char list =
     card.ManaCost.Intersect(['W';'U';'B';'R';'G']) |> Seq.toList
 
-let private getColorGroup (card: CardDetails) : ColorGroup = 
+let private getColorGroup (card: CardDetails) : ColorGroup =
     if card.SuperType.ToLower().Contains("token") then ColorGroup.Token
     elif card.Type.ToLower().Contains("land") then ColorGroup.Land
     else
@@ -59,11 +59,11 @@ let private generateNumbers (cards: CardDetails seq) : (int * CardDetails) seq =
 
 let private generateAndApplyNumbers (cards: CardDetails list) : CardDetails list =
     let count = cards.Length
-    generateNumbers cards 
-    |> Seq.map (fun (n, c) -> 
-        { c with 
-            Number = n.ToString().PadLeft(count.ToString().Length, '0'); 
-            Total = count.ToString() 
+    generateNumbers cards
+    |> Seq.map (fun (n, c) ->
+        { c with
+            Number = n.ToString().PadLeft(count.ToString().Length, '0')
+            Total = count.ToString()
         })
     |> Seq.toList
 
@@ -72,19 +72,19 @@ let private getCardTemplate (card: CardDetails) : string =
     match colors.Length with
     | 0 -> "C"
     | 1 -> colors.Head.ToString()
-    | 2 -> 
+    | 2 ->
         if not <| card.ManaCost.Contains('/') then "Gld"
         else String(colors |> Seq.toArray)
-    | _ -> "Gld"  
-    
+    | _ -> "Gld"
+
 let private getAccent (card: CardDetails) : string =
-    if card.SpecialFrames = "token" 
+    if card.SpecialFrames = "token"
     then "C"
     else
         let colors = getColors card
         match colors.Length with
-        | 0 -> 
-            if card.LandOverlay = "A" then "C" 
+        | 0 ->
+            if card.LandOverlay = "A" then "C"
             else card.LandOverlay
         | 1 -> colors.Head.ToString()
         | 2 ->
@@ -103,18 +103,18 @@ let private getAccent (card: CardDetails) : string =
 
 let processCard (card: CardDetails) : CardDetails =
     // Set accent and template
-    let card = 
-        { card with 
-            Template = getCardTemplate card 
+    let card =
+        { card with
+            Template = getCardTemplate card
             Accent = getAccent card
         }
 
     // Fix centering bug
     let card =
-        if cardsToCenter |> Seq.contains card.Name 
+        if cardsToCenter |> Seq.contains card.Name
         then { card with Center = "true" }
         else card
-   
+
     card
 
 let processCards (cards : CardDetails list) : CardDetails list =

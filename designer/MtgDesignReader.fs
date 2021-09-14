@@ -4,15 +4,15 @@ module MtgDesignReader
 open System
 open System.IO
 open System.Net.Http
+open System.Text.RegularExpressions
 open System.Threading.Tasks
 open System.Xml
 open System.Xml.Linq
 open FSharp.Control.Tasks
 open Sgml
-open System.Text.RegularExpressions
 open Model
 
-let private getXDoc (url: string) : XDocument Task =    
+let private getXDoc (url: string) : XDocument Task =
     task {
         use request = new HttpRequestMessage()
         request.RequestUri <- Uri(url)
@@ -31,41 +31,41 @@ let private getXDoc (url: string) : XDocument Task =
         let doc = XDocument.Load(sgmlReader)
         return doc
     }
-    
+
 let private getElementById (doc: XDocument, id: string): XElement =
     doc.Descendants()
     |> Seq.filter (fun el -> el.Attribute(XName.op_Implicit("id")) <> null)
     |> Seq.find (fun el -> el.Attribute(XName.op_Implicit("id")).Value = id)
-    
+
 let private getCardInfosFromSetPage (setName: string) (doc: XDocument) : CardInfo list =
-    
-    let listElements = 
-        doc.Descendants() 
+
+    let listElements =
+        doc.Descendants()
         |> Seq.filter (fun el -> el.Name.LocalName = "li")
         |> Seq.toList
-    
+
     let withParagraphs =
         listElements
-        |> Seq.collect (fun li -> 
-            li.Descendants() 
-            |> Seq.filter(fun el -> el.Name.LocalName = "p") 
+        |> Seq.collect (fun li ->
+            li.Descendants()
+            |> Seq.filter(fun el -> el.Name.LocalName = "p")
             |> Seq.map(fun p -> (li, p)))
-    
+
     let withLinks =
         withParagraphs
         |> Seq.map (fun (li, p) -> (li, p, p.Descendants() |> Seq.tryHead))
-        |> Seq.filter (fun (li, p, maybeDesc) -> 
+        |> Seq.filter (fun (li, p, maybeDesc) ->
             match maybeDesc with
             | Some child -> child.Name.LocalName = "a"
             | _ -> false)
         |> Seq.map (fun (li, p, maybeDesc) -> (li, p, maybeDesc.Value))
         |> Seq.toList
-    
+
     let hrefName = XName.op_Implicit("href")
-    
+
     let cards =
         withLinks
-        |> Seq.map (fun (li, p, a) -> 
+        |> Seq.map (fun (li, p, a) ->
             let url = a.Attribute(hrefName).Value
             let m = Regex.Match(url, "https://mtg.design/i/(\w+)/edit")
             {
@@ -75,11 +75,11 @@ let private getCardInfosFromSetPage (setName: string) (doc: XDocument) : CardInf
             }
         )
         |> Seq.toList
-    
+
     cards
-        
+
 let private getCardDetailsFromCardPage (doc: XDocument) : CardDetails =
-    let getValue(id: string): string = 
+    let getValue(id: string): string =
         let el = getElementById(doc, id)
         let valueAttr = el.Attribute(XName.op_Implicit("value"))
         if valueAttr <> null then valueAttr.Value.Trim()
@@ -133,12 +133,12 @@ let getSetCardInfos (setName: string) : CardInfo list Task =
 
         let url = sprintf "https://mtg.design/set/%s" setName
         let! page = getXDoc url
-        let cards = getCardInfosFromSetPage setName page       
-        
+        let cards = getCardInfosFromSetPage setName page
+
         printfn "Found %i cards:" cards.Length
         for c in cards do
             printfn "\t%s" c.Name
-            
+
         return cards
     }
 
@@ -152,7 +152,7 @@ let getCardDetails (cardInfo: CardInfo) : CardDetails Task =
         return { card with Id = cardInfo.Id }
     }
 
-let getSetCardDetails (setName : string) : CardDetails list Task = 
+let getSetCardDetails (setName : string) : CardDetails list Task =
     task {
         printfn "Parsing card details..."
         let! cardInfos = getSetCardInfos setName
@@ -161,7 +161,7 @@ let getSetCardDetails (setName : string) : CardDetails list Task =
         return cardDetails
     }
 
-let getCardImage (card: CardInfo) : byte[] Task = 
+let getCardImage (card: CardInfo) : byte[] Task =
     task {
         let url = sprintf "https://mtg.design/i/%s.jpg" card.Id
         let! response = Config.client.GetAsync url
