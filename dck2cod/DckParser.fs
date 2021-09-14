@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Parser
+﻿module GamesFaix.MtgTools.Dck2Cod.DckParser
 
 open System
 open System.IO
@@ -22,7 +22,7 @@ let private parseDeckItem (line: string) : DeckItem =
         }
     | _ -> raise <| FormatException()
 
-let parseDeck (path: string) : ShandalarDeckModel =
+let parseDeck (path: string) : ShandalarDeck =
     let lines = File.ReadAllLines path |> List.ofArray
     let titleLine = lines.[0]
 

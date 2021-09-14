@@ -3,8 +3,6 @@
 open System
 open GamesFaix.MtgTools.Dck2Cod.Model
 
-let private any<'a> (xs: 'a list) = xs.Length > 0
-
 let private toListString (grp: (string * DeckItem list) list) : string =
     grp
     |> List.map (fun (_, items) -> items.Head)
@@ -18,26 +16,26 @@ let validate (deck: Deck) : string list =
             deck.Cards
             |> List.groupBy DeckItem.getKey
             |> List.filter (fun (_, items) -> items.Length > 1)
-        if any duplicates then
+        if List.any duplicates then
             $"The deck {deck.Name} has duplicate listings for {duplicates |> toListString}"
 
         let duplicates =
             deck.Sideboard
             |> List.groupBy DeckItem.getKey
             |> List.filter (fun (_, items) -> items.Length > 1)
-        if any duplicates then
+        if List.any duplicates then
             $"The sideboard of {deck.Name} has duplicate listings for {duplicates |> toListString}"
 
         let deckWithSideboard =
             deck.Cards @ deck.Sideboard
-            |> Mapper.consolidateDuplicates List.sumBy
+            |> DeckItem.sumDuplicates
 
         let lessThan1 = deckWithSideboard |> List.filter (fun x -> x.Count < 1)
-        if any lessThan1 then
+        if List.any lessThan1 then
             $"The deck {deck.Name} has less than 1 of {lessThan1 |> DeckItem.toListString}"
 
-        let moreThan4 = deckWithSideboard |> List.filter (fun x -> x.Count > 4 && (not <| CardInfo.isBasicLand x))
-        if any moreThan4 then
+        let moreThan4 = deckWithSideboard |> List.filter (fun x -> x.Count > 4 && (not <| DeckItem.isBasicLand x))
+        if List.any moreThan4 then
             $"The deck {deck.Name} has more than 4 of {moreThan4 |> DeckItem.toListString}"
 
         let count = deck.Cards |> List.sumBy (fun x -> x.Count)

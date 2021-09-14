@@ -21,12 +21,12 @@ let main _ =
 
     for f in allFiles do
         Console.WriteLine($"Processing {f}")
-        let deck = Parser.parseDeck f |> Mapper.mapDeck
+        let deck = DckParser.parseDeck f |> Model.Deck.fromShandalar
         let issues = Validator.validate deck
         allIssues.AddRange issues
 
         let targetPath = Path.Combine(targetDir, $"{deck.Name}.cod")
-        Writer.writeDeck targetPath deck
+        CodWriter.writeDeck targetPath deck
 
     for issue in allIssues do
         Console.WriteLine issue

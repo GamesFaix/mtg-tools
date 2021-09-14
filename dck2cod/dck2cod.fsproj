@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="README.md" />
+    <Compile Include="Utils.fs" />
     <Compile Include="Model.fs" />
-    <Compile Include="CardInfo.fs" />
-    <Compile Include="Mapper.fs" />
-    <Compile Include="Parser.fs" />
+    <Compile Include="DckParser.fs" />
     <Compile Include="Validator.fs" />
-    <Compile Include="Writer.fs" />
+    <Compile Include="CodWriter.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

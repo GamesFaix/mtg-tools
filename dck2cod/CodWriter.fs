@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Writer
+﻿module GamesFaix.MtgTools.Dck2Cod.CodWriter
 
 open System.IO
 open System.Xml.Linq
