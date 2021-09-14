@@ -39,18 +39,22 @@ module Line =
     let getValue (name: string) (m: Match) : string =
         m.Groups.[name].Captures.[0].Value
 
-    let titlePattern = Regex("(?<name>[\w ]+)\((?<desc>[^)]+)\)")
+    let tryGetValue (name: string) (m: Match) : string option =
+        try getValue name m |> Some
+        with _ -> None
+
+    let titlePattern = Regex("^(?<name>[\w'\- ]+)(\((?<desc>[\w,/ ]+)\))?\s*$")
     let tryParseTitle (line: string) : bool * DckTitle option =
         match titlePattern.Match line with
         | m when m.Success ->
             let title = {
                 Name = (m |> getValue "name").Trim()
-                Description = m |> getValue "desc"
+                Description = m |> tryGetValue "desc" |> Option.defaultValue ""
             }
             (true, Some title)
         | _ -> (false, None)
 
-    let sectionHeaderPattern = Regex("\.v(?<header>\w+)")
+    let sectionHeaderPattern = Regex("^\.v(?<header>\w+)\s*$")
     let tryParseSectionHeader (line: string) : bool * string option =
         match sectionHeaderPattern.Match line with
         | m when m.Success ->
@@ -58,7 +62,7 @@ module Line =
             (true, Some header)
         | _ -> (false, None)
 
-    let cardPattern = Regex("\.(?<id>\d+)\s+(?<count>\d+)\s+(?<name>.*)")
+    let cardPattern = Regex("^\.(?<id>\d+)\s+(?<count>\d+)\s+(?<name>.*)\s*$")
     let tryParseCard (line: string) : bool * DckCard option =
         match cardPattern.Match line with
         | m when m.Success ->

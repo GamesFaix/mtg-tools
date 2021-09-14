@@ -49,6 +49,8 @@ let main _ =
 
     let issues = files |> List.collect processFile
 
+    printfn ""
+    printfn "VALIDATION ISSUES:"
     for issue in issues do
         writeLine issue
 

@@ -15,6 +15,24 @@ let ``Line.tryParseTitle should work`` () =
     Assert.Equal(expected, actual)
 
 [<Fact>]
+let ``Line.tryParseTitle should work with no description`` () =
+    let line = "Queltosh"
+    let title : Dck.DckTitle = {
+        Name = "Queltosh"
+        Description = ""
+    }
+    let expected = (true, Some title)
+    let actual = Dck.Line.tryParseTitle line
+    Assert.Equal(expected, actual)
+
+[<Fact>]
+let ``Line.tryParseTitle should not work on cards`` () =
+    let line = ".221 1 Serra Angel"
+    let expected = (false, None)
+    let actual = Dck.Line.tryParseTitle line
+    Assert.Equal(expected, actual)
+
+[<Fact>]
 let ``Line.tryParseSectionHeader should work`` () =
     let line = ".vGreen"
     let expected = (true, Some "Green")
