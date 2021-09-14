@@ -6,9 +6,9 @@ open GamesFaix.MtgTools.Dck2Cod
 module DeckTests =
 
     [<Fact>]
-    let ``fromShandalar should map deck`` () =
+    let ``fromDck should map deck`` () =
         // Arrange
-        let shandalarDeck = "LordOfFate" |> Data.readDckFile |> Dck.parse
+        let dckDeck = "LordOfFate" |> Data.readDckFile |> Dck.parse
 
         let expected : Model.Deck = {
             Name = "Lord of Fate"
@@ -38,26 +38,22 @@ module DeckTests =
         }
 
         // Act
-        let actual = Model.Deck.fromShandalar shandalarDeck
+        let actual = Model.Deck.fromDck dckDeck
 
         // Assert
         Assert.Equal(expected, actual)
 
     [<Fact>]
-    let ``fromShandalar should add comment about astral and ante cards`` () =
+    let ``fromDck should add comment about astral and ante cards`` () =
         // Arrange
-        let shandalarDeck : Model.ShandalarDeck = {
+        let dckDeck : Dck.DckDeck = {
             Name = "Test"
-            Core = [
-                { Count = 1; Name = "Gem Bazaar" }
-                { Count = 1; Name = "Jeweled Bird" }
+            Description = ""
+            Cards = [
+                { Id = 1; Count = 1; Name = "Gem Bazaar" }
+                { Id = 1; Count = 1; Name = "Jeweled Bird" }
             ]
-            DefaultExtension = []
-            BlackExtension = []
-            BlueExtension = []
-            GreenExtension = []
-            RedExtension = []
-            WhiteExtension = []
+            Extensions = []
         }
 
         let expected : Model.Deck = {
@@ -71,7 +67,7 @@ module DeckTests =
         }
 
         // Act
-        let actual = Model.Deck.fromShandalar shandalarDeck
+        let actual = Model.Deck.fromDck dckDeck
 
         // Assert
         Assert.Equal(expected, actual)

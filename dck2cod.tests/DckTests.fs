@@ -4,45 +4,59 @@ open Xunit
 open GamesFaix.MtgTools.Dck2Cod
 
 [<Fact>]
-let ``parse should parse .dck file with sideboard`` () =
-    // Arrange
-    let text = Data.readDckFile "LordOfFate"
+let ``Line.tryParseTitle should work`` () =
+    let line = "Queltosh (U/W/R, 4th)"
+    let title : Dck.DckTitle = {
+        Name = "Queltosh"
+        Description = "U/W/R, 4th"
+    }
+    let expected = (true, Some title)
+    let actual = Dck.Line.tryParseTitle line
+    Assert.Equal(expected, actual)
 
-    let expected : Model.ShandalarDeck = {
-        Name = "Lord of Fate"
-        Core = [
-            { Count = 11; Name = "Plains" }
-            { Count = 11; Name = "Swamp" }
-            { Count = 2; Name = "Dark Ritual" }
-            { Count = 3; Name = "Castle" }
-            { Count = 3; Name = "Healing Salve" }
-            { Count = 3; Name = "Holy Strength" }
-            { Count = 3; Name = "Unholy Strength" }
-            { Count = 4; Name = "Yotian Soldiers" } // Note: typo preserved by parser
-            { Count = 4; Name = "Serra Angel" }
-            { Count = 3; Name = "Osai Vultures" }
-            { Count = 3; Name = "Pestilence" }
-            { Count = 2; Name = "Necropolis of Azaar" }
-            { Count = 3; Name = "Drudge Skeletons" }
-            { Count = 2; Name = "Divine Transformation" }
+[<Fact>]
+let ``Line.tryParseSectionHeader should work`` () =
+    let line = ".vGreen"
+    let expected = (true, Some "Green")
+    let actual = Dck.Line.tryParseSectionHeader line
+    Assert.Equal(expected, actual)
+
+[<Fact>]
+let ``Line.tryParseCard should work`` () =
+    let line = ".221	1	Serra Angel"
+    let title : Dck.DckCard = {
+        Name = "Serra Angel"
+        Id = 221
+        Count = 1
+    }
+    let expected = (true, Some title)
+    let actual = Dck.Line.tryParseCard line
+    Assert.Equal(expected, actual)
+
+[<Fact>]
+let ``parse should parse .dck file without sideboard`` () =
+    // Arrange
+    let text = Data.readDckFile "Seer"
+
+    let expected : Dck.DckDeck = {
+        Name = "Seer"
+        Description = "Ub, 4th"
+        Cards = [
+            { Id = 126; Count = 22; Name = "Island" }
+            { Id =  69; Count =  3; Name = "Drain Power" }
+            { Id =  52; Count =  4; Name = "Crystal Rod" }
+            { Id =  48; Count =  2; Name = "Counterspell" }
+            { Id = 260; Count =  4; Name = "Unsummon" }
+            { Id = 859; Count =  4; Name = "Zephyr Falcon" }
+            { Id = 326; Count =  4; Name = "Ghost Ship" }
+            { Id = 462; Count =  4; Name = "Unstable Mutation" }
+            { Id = 817; Count =  2; Name = "Time Elemental" }
+            { Id = 534; Count =  3; Name = "Tetravus" }
+            { Id = 538; Count =  3; Name = "Triskelion" }
+            { Id = 502; Count =  2; Name = "Hurkyl's Recall" }
+            { Id = 514; Count =  3; Name = "Ornithopter" }
         ]
-        DefaultExtension= [
-            { Count = 3; Name = "Ornithopter" }
-        ]
-        BlackExtension = [
-            { Count = 3; Name = "Brass Man" }
-        ]
-        BlueExtension = [
-            { Count = 3; Name = "Ornithopter" }
-        ]
-        GreenExtension = [
-            { Count = 3; Name = "Animate Dead" }
-        ]
-        RedExtension = [
-            { Count = 3; Name = "Amulet of Kroog" }
-        ]
-        WhiteExtension = [
-            { Count = 3; Name = "Brass Man" }
+        Extensions = [
         ]
     }
 
@@ -53,33 +67,49 @@ let ``parse should parse .dck file with sideboard`` () =
     Assert.Equal(expected, actual)
 
 [<Fact>]
-let ``parse should parse .dck file without sideboard`` () =
+let ``parse should parse .dck file with sideboard`` () =
     // Arrange
-    let text = Data.readDckFile "Seer"
+    let text = Data.readDckFile "LordOfFate"
 
-    let expected : Model.ShandalarDeck = {
-        Name = "Seer"
-        Core = [
-            { Count = 22; Name = "Island" }
-            { Count = 3; Name = "Drain Power" }
-            { Count = 4; Name = "Crystal Rod" }
-            { Count = 2; Name = "Counterspell" }
-            { Count = 4; Name = "Unsummon" }
-            { Count = 4; Name = "Zephyr Falcon" }
-            { Count = 4; Name = "Ghost Ship" }
-            { Count = 4; Name = "Unstable Mutation" }
-            { Count = 2; Name = "Time Elemental" }
-            { Count = 3; Name = "Tetravus" }
-            { Count = 3; Name = "Triskelion" }
-            { Count = 2; Name = "Hurkyl's Recall" }
-            { Count = 3; Name = "Ornithopter" }
+    let expected : Dck.DckDeck = {
+        Name = "Lord of Fate"
+        Description = "Bl/Wh, 4th Edition"
+        Cards = [
+            { Id = 188; Count = 11; Name = "Plains" }
+            { Id = 239; Count = 11; Name = "Swamp" }
+            { Id =  55; Count =  2; Name = "Dark Ritual" }
+            { Id =  28; Count =  3; Name = "Castle" }
+            { Id = 108; Count =  3; Name = "Healing Salve" }
+            { Id = 112; Count =  3; Name = "Holy Strength" }
+            { Id = 259; Count =  3; Name = "Unholy Strength" }
+            { Id = 550; Count =  4; Name = "Yotian Soldiers" } // Note: typo preserved by parser
+            { Id = 221; Count =  4; Name = "Serra Angel" }
+            { Id = 736; Count =  3; Name = "Osai Vultures" }
+            { Id = 182; Count =  3; Name = "Pestilence" }
+            { Id = 871; Count =  2; Name = "Necropolis of Azaar" }
+            { Id =  70; Count =  3; Name = "Drudge Skeletons" }
+            { Id = 616; Count =  2; Name = "Divine Transformation" }
         ]
-        DefaultExtension= []
-        BlackExtension = []
-        BlueExtension = []
-        GreenExtension = []
-        RedExtension = []
-        WhiteExtension = []
+        Extensions = [
+            { Name = "None"; Cards = [
+                { Id = 514; Count = 3; Name = "Ornithopter" }
+            ]}
+            { Name = "Black"; Cards = [
+                { Id = 930; Count = 3; Name = "Brass Man" }
+            ]}
+            { Name = "Blue"; Cards = [
+                { Id = 514; Count = 3; Name = "Ornithopter" }
+            ]}
+            { Name = "Green"; Cards = [
+                { Id = 3; Count = 3; Name = "Animate Dead" }
+            ]}
+            { Name = "Red"; Cards = [
+                { Id = 466; Count = 3; Name = "Amulet of Kroog" }
+            ]}
+            { Name = "White"; Cards = [
+                { Id = 930; Count = 3; Name = "Brass Man" }
+            ]}
+        ]
     }
 
     // Act

@@ -2,73 +2,174 @@
 
 open System
 open System.Text.RegularExpressions
-open GamesFaix.MtgTools.Dck2Cod.Model
 
-let private parseName (line: string) : string =
-    let pattern = @"([\w ]+).*"
-    match Regex.Match(line, pattern) with
-    | m when m.Success ->
-        m.Groups.[1].Captures.[0].Value.Trim()
-    | _ -> raise <| FormatException()
+type DckTitle = {
+    Name: string
+    Description: string
+}
 
-let private parseDeckItem (line: string) : DeckItem =
-    let pattern = @"\.\d+\s+(\d+)\s+(.*)"
-    match Regex.Match(line, pattern) with
-    | m when m.Success ->
-        {
-            Name = m.Groups.[2].Captures.[0].Value.Trim()
-            Count = Int32.Parse(m.Groups.[1].Captures.[0].Value)
-        }
-    | _ -> raise <| FormatException()
+type DckCard = {
+    Name: string
+    Id: int
+    Count: int
+}
 
-let parse (text: string) =
-    let lines = text.Split("\n") |> List.ofArray
-    let titleLine = lines.[0]
+type Line =
+    | Title of DckTitle
+    | Blank
+    | Card of DckCard
+    | SectionHeader of string
 
-    let core =
+type DckExtension = {
+    Name : string
+    Cards: DckCard list
+}
+
+type DckDeck = {
+    Name : string
+    Description : string
+    Cards : DckCard list
+    Extensions : DckExtension list
+}
+
+module Line =
+    let isBlank (line: string) =
+        line.Trim() = ""
+
+    let getValue (name: string) (m: Match) : string =
+        m.Groups.[name].Captures.[0].Value
+
+    let titlePattern = Regex("(?<name>[\w ]+)\((?<desc>[^)]+)\)")
+    let tryParseTitle (line: string) : bool * DckTitle option =
+        match titlePattern.Match line with
+        | m when m.Success ->
+            let title = {
+                Name = (m |> getValue "name").Trim()
+                Description = m |> getValue "desc"
+            }
+            (true, Some title)
+        | _ -> (false, None)
+
+    let sectionHeaderPattern = Regex("\.v(?<header>\w+)")
+    let tryParseSectionHeader (line: string) : bool * string option =
+        match sectionHeaderPattern.Match line with
+        | m when m.Success ->
+            let header = m |> getValue "header"
+            (true, Some header)
+        | _ -> (false, None)
+
+    let cardPattern = Regex("\.(?<id>\d+)\s+(?<count>\d+)\s+(?<name>.*)")
+    let tryParseCard (line: string) : bool * DckCard option =
+        match cardPattern.Match line with
+        | m when m.Success ->
+            let card = {
+                Name = (m |> getValue "name").Trim()
+                Id = m |> getValue "id" |> Int32.Parse
+                Count = m |> getValue "count" |> Int32.Parse
+            }
+            (true, Some card)
+        | _ -> (false, None)
+
+    let parse (line: string) : Line option =
+        match isBlank line with
+        | true -> Some Blank
+        | _ ->
+            match tryParseTitle line with
+            | (true, Some title) -> Title title |> Some
+            | _ ->
+                match tryParseSectionHeader line with
+                | (true, Some header) -> SectionHeader header |> Some
+                | _ ->
+                    match tryParseCard line with
+                    | (true, Some card) -> Card card |> Some
+                    | _ -> None
+
+let private popSection (cleanedLines: Line list) : (DckExtension option * Line list) =
+    match cleanedLines with
+    | [] -> (None, [])
+    | (SectionHeader header)::tail ->
+        let cards =
+            tail
+            |> List.takeWhile (fun x ->
+                match x with
+                | Card _ -> true
+                | _ -> false
+            )
+            |> List.choose (fun x ->
+                match x with
+                | Card c -> Some c
+                | _ -> None
+            )
+
+        Some {
+            Name = header
+            Cards = cards
+        },
+        tail |> List.skip cards.Length
+    | _ -> raise <| FormatException("Section does not start with header")
+
+let parse (dckText: string) : DckDeck =
+    let lines =
+        dckText.Split "\n"
+        |> Seq.ofArray
+        |> Seq.map Line.parse
+        |> Seq.toList
+
+    if lines |> List.exists Option.isNone then
+        raise <| FormatException("One or more lines were not in a recognized format")
+
+    let title =
         lines
-        |> List.skip 2 // Title and blank line
-        |> List.takeWhile (not << String.IsNullOrWhiteSpace)
-        |> List.map parseDeckItem
+        |> List.choose (fun x ->
+            match x with
+            | Some (Title x) -> Some x
+            | _ -> None)
+        |> List.tryHead
+    if title.IsNone then
+        raise <| FormatException("Title line missing")
+    let title = title.Value
 
-    let extensionLines =
+    // Remove blank lines and title
+    let lines =
         lines
-        |> List.skip (2 + core.Length + 1) // Title, blank, core, blank
-        |> List.takeWhile (not << String.IsNullOrWhiteSpace) // Avoid trailing blank line
+        |> List.filter (fun x ->
+            match x with
+            | Some Blank
+            | Some (Title _)
+            | None -> false
+            | _ -> true)
+        |> List.map Option.get
 
-    let isExtensionLine line = Regex.IsMatch(line, "\\d")
+    // The core is all the cards before any section header
+    let coreCards =
+        lines
+        |> List.takeWhile (fun x ->
+            match x with
+            | Card _ -> true
+            | _ -> false
+        )
+        |> List.choose (fun x ->
+            match x with
+            | Card c -> Some c
+            | _ -> None
+        )
+    let mutable lines = lines |> List.skip coreCards.Length
 
-    let takeLines length =
-        extensionLines
-        |> List.skip length
-        |> List.takeWhile isExtensionLine
-        |> List.map parseDeckItem
-
-    let mutable skipLength = 1 // vNone header
-    let defaultExt = takeLines skipLength
-
-    skipLength <- skipLength + defaultExt.Length + 1
-    let blackExt = takeLines skipLength
-
-    skipLength <- skipLength + blackExt.Length + 1
-    let blueExt = takeLines skipLength
-
-    skipLength <- skipLength + blueExt.Length + 1
-    let greenExt = takeLines skipLength
-
-    skipLength <- skipLength + greenExt.Length + 1
-    let redExt = takeLines skipLength
-
-    skipLength <- skipLength + redExt.Length + 1
-    let whiteExt = takeLines skipLength
+    let extensions = ResizeArray()
+    let mutable stop = false
+    while not stop do
+        let (ext, remaining) = popSection lines
+        match ext with
+        | Some e ->
+            extensions.Add e
+            lines <- remaining
+        | _ ->
+            stop <- true
+        ()
 
     {
-        Name = parseName titleLine
-        Core = core
-        DefaultExtension = defaultExt
-        BlackExtension = blackExt
-        BlueExtension = blueExt
-        GreenExtension = greenExt
-        RedExtension = redExt
-        WhiteExtension = whiteExt
+        Name = title.Name
+        Description = title.Description
+        Cards = coreCards
+        Extensions = extensions |> Seq.toList
     }

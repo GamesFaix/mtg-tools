@@ -28,7 +28,7 @@ let processFile (file: string): string list =
         file
         |> FileSystem.readText
         |> Dck.parse
-        |> Model.Deck.fromShandalar
+        |> Model.Deck.fromDck
 
     let cod = Cod.fromDeck deck
     let targetPath = Path.Combine(targetDir, $"{deck.Name}.cod")

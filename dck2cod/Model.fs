@@ -12,17 +12,6 @@ with
     member this.Key =
         this.Name.ToLowerInvariant()
 
-type ShandalarDeck = {
-    Name: string
-    Core: DeckItem list
-    DefaultExtension: DeckItem list
-    BlackExtension: DeckItem list
-    BlueExtension: DeckItem list
-    GreenExtension: DeckItem list
-    RedExtension: DeckItem list
-    WhiteExtension: DeckItem list
-}
-
 type Deck = {
     Name: string
     Comments: string
@@ -149,27 +138,43 @@ module Deck =
             sb.Append $"Contains these ante cards: {cardList}. " |> ignore
         sb.ToString()
 
-    let fromShandalar (shandalarDeck: ShandalarDeck) : Deck =
+    let fromDck (dck: Dck.DckDeck) : Deck =
+        let toDeckItem (dckCard: Dck.DckCard) : DeckItem =
+            {
+                Name = dckCard.Name
+                Count = dckCard.Count
+            }
+
+        let cards = dck.Cards |> List.map toDeckItem
+
+        let defaultExtension =
+            dck.Extensions
+            |> List.tryFind (fun e -> e.Name = "None")
+            |> Option.map (fun e -> e.Cards)
+            |> Option.defaultValue []
+            |> List.map toDeckItem
+
+        let colorExtensions =
+            dck.Extensions
+            |> List.filter (fun e -> e.Name <> "None")
+            |> List.collect (fun e -> e.Cards)
+            |> List.map toDeckItem
+
         let cards =
-            shandalarDeck.Core
-            @ shandalarDeck.DefaultExtension
-            |> DeckItem.sumDuplicates
+            cards @ defaultExtension
+            |> DeckItem.unionDuplicates
             |> fixShandalarTypos
 
         let sideboard =
-            shandalarDeck.BlackExtension
-            @ shandalarDeck.BlueExtension
-            @ shandalarDeck.GreenExtension
-            @ shandalarDeck.RedExtension
-            @ shandalarDeck.WhiteExtension
+            colorExtensions
             |> DeckItem.unionDuplicates
-            |> DeckItem.subtract shandalarDeck.DefaultExtension
+            |> DeckItem.subtract defaultExtension
             |> fixShandalarTypos
 
         let comments = getComments (cards @ sideboard)
 
         {
-            Name = shandalarDeck.Name
+            Name = dck.Name
             Comments = comments
             Cards = cards
             Sideboard = sideboard
