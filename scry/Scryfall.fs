@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgInventorySearch.Scryfall
+﻿module GamesFaix.MtgTools.Scry.Scryfall
 
 open System
 open ScryfallApi.Client.Models

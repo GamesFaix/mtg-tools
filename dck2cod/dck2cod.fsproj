@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <RootNamespace>GamesFaix.MtgTools.Dck2Cod</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="Dck.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="Cod.fs" />
+    <Compile Include="Validator.fs" />
+    <Compile Include="FileSystem.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgInventorySearch.Inventory
+﻿module GamesFaix.MtgTools.Scry.Inventory
 
 open System.Globalization
 open System.IO
