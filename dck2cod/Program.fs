@@ -4,33 +4,43 @@ open System
 open System.IO
 
 let sourceDir =
-    Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-        "MagicTG/Decks")
+    "%PROGRAMFILES(x86)%/MagicTG/Decks"
+    |> Environment.ExpandEnvironmentVariables
+    |> Path.GetFullPath
 
 let targetDir =
-    Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "../../../../../Microprose")
+    "%USERPROFILE%/Desktop/ShandalarDecks"
+    |> Environment.ExpandEnvironmentVariables
     |> Path.GetFullPath
 
 [<EntryPoint>]
 let main _ =
-    let allIssues = ResizeArray()
-    let allFiles = Directory.GetFiles sourceDir
+    printfn """
+____    ___  _  _    ___      ___  _____  ____
+(  _ \  / __)( )/ )  (__ \    / __)(  _  )(  _ \
+    )(_) )( (__  )  (    / _/   ( (__  )(_)(  )(_) )
+(____/  \___)(_)\_)  (____)   \___)(_____)(____/ """
 
-    for f in allFiles do
-        Console.WriteLine($"Processing {f}")
-        let deck = DckParser.parseDeck f |> Model.Deck.fromShandalar
-        let issues = Validator.validate deck
-        allIssues.AddRange issues
+    let files = Directory.GetFiles sourceDir |> Seq.toList
 
-        let targetPath = Path.Combine(targetDir, $"{deck.Name}.cod")
-        CodWriter.writeDeck targetPath deck
+    printfn $"Found {files.Length} deck files in {sourceDir}..."
 
-    for issue in allIssues do
-        Console.WriteLine issue
+    let issues =
+        files
+        |> List.collect (fun f ->
+            printfn $"Processing {f}..."
+            let deck = DckParser.parseDeck f |> Model.Deck.fromShandalar
+            printfn $"  ({deck.Name})"
+            let issues = Validator.validate deck
+            let targetPath = Path.Combine(targetDir, $"{deck.Name}.cod")
+            CodWriter.writeDeck targetPath deck
+            issues
+        )
 
-    Console.WriteLine "Done"
+    for issue in issues do
+        printfn "%s" issue
+
+    printfn "Done"
+
     Console.Read () |> ignore
     0 // return an integer exit code

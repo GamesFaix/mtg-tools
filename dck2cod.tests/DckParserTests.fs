@@ -1,11 +1,10 @@
 module GamesFaix.MtgTools.Dck2Cod.DckParserTests
 
-open System.IO
 open Xunit
 open GamesFaix.MtgTools.Dck2Cod
 
 [<Fact>]
-let ``parseDeck should parse .dck file`` () =
+let ``parseDeck should parse .dck file with sideboard`` () =
     // Arrange
     let path = "./TestData/LordOfFate.dck"
 
@@ -45,6 +44,42 @@ let ``parseDeck should parse .dck file`` () =
         WhiteExtension = [
             { Count = 3; Name = "Brass Man" }
         ]
+    }
+
+    // Act
+    let actual = DckParser.parseDeck path
+
+    // Assert
+    Assert.Equal(expected, actual)
+
+[<Fact>]
+let ``parseDeck should parse .dck file without sideboard`` () =
+    // Arrange
+    let path = "./TestData/Seer.dck"
+
+    let expected : Model.ShandalarDeck = {
+        Name = "Seer"
+        Core = [
+            { Count = 22; Name = "Island" }
+            { Count = 3; Name = "Drain Power" }
+            { Count = 4; Name = "Crystal Rod" }
+            { Count = 2; Name = "Counterspell" }
+            { Count = 4; Name = "Unsummon" }
+            { Count = 4; Name = "Zephyr Falcon" }
+            { Count = 4; Name = "Ghost Ship" }
+            { Count = 4; Name = "Unstable Mutation" }
+            { Count = 2; Name = "Time Elemental" }
+            { Count = 3; Name = "Tetravus" }
+            { Count = 3; Name = "Triskelion" }
+            { Count = 2; Name = "Hurkyl's Recall" }
+            { Count = 3; Name = "Ornithopter" }
+        ]
+        DefaultExtension= []
+        BlackExtension = []
+        BlueExtension = []
+        GreenExtension = []
+        RedExtension = []
+        WhiteExtension = []
     }
 
     // Act

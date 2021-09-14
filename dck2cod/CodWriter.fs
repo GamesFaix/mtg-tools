@@ -38,7 +38,14 @@ let private toDocument (deck: Deck): XDocument =
         )
     )
 
+let private createDirIfMissing (path: string) =
+    let dir = Path.GetDirectoryName path
+    match Directory.Exists dir with
+    | false -> Directory.CreateDirectory dir |> ignore
+    | _ -> ()
+
 let writeDeck (path: string) (deck: Deck) : unit =
     let doc = deck |> toDocument
+    createDirIfMissing path
     use stream = File.Open(path, FileMode.Create)
     doc.Save stream
