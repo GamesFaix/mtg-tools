@@ -4,21 +4,19 @@ open Argu
 open Model
 
 type CardArguments =
-    | [<CliPrefix(CliPrefix.None)>] Clone of oldSet:string * oldCard:string * newSet:string * newCard:string
+    | [<CliPrefix(CliPrefix.None)>] Copy of oldSet:string * cardName:string * newSet:string
     | [<CliPrefix(CliPrefix.None)>] Delete of set:string * card:string
-    | [<CliPrefix(CliPrefix.None)>] DownloadImage of set:string * card:string
 
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Clone _ -> "Copies a card"
+            | Copy _ -> "Copies a card"
             | Delete _ -> "Deletes a card"
-            | DownloadImage _ -> "Downloads the image of a card"
 
 type SetArguments =
     | [<CliPrefix(CliPrefix.None)>] Audit of set:string
     | [<CliPrefix(CliPrefix.None)>] AutoNumber of set:string
-    | [<CliPrefix(CliPrefix.None)>] Clone of oldSet:string * newSet:string
+    | [<CliPrefix(CliPrefix.None)>] Copy of oldSet:string * newSet:string
     | [<CliPrefix(CliPrefix.None)>] CreateHtmlLayout of set:string
     | [<CliPrefix(CliPrefix.None)>] Delete of set:string
     | [<CliPrefix(CliPrefix.None)>] DownloadImages of set:string
@@ -29,7 +27,7 @@ type SetArguments =
             match this with
             | Audit _ -> "Audits a set for anomalies"
             | AutoNumber _ -> "Updates the collector's number on all cards in a set"
-            | Clone _ -> "Copies a set"
+            | Copy _ -> "Copies a set"
             | CreateHtmlLayout _ -> "Creates an HTML layout file for printing a set"
             | Delete _ -> "Deletes a set"
             | DownloadImages _ -> "Downloads images for each card in a set"
@@ -50,16 +48,15 @@ let getJob (ctx: Context) (results: MainArguments ParseResults) : unit Async =
 
     | Card results ->
         match results.GetAllResults().Head with
-        | CardArguments.Clone (oldSet, oldCard, newSet, newCard) -> failwith "Not implemented"
-        | CardArguments.Delete (set, card) -> failwith "Not implemented"
-        | DownloadImage (set, card) -> failwith "Not implemented"
+        | CardArguments.Copy (oldSet, cardName, newSet) -> Macro.Card.copy ctx oldSet cardName newSet
+        | CardArguments.Delete (set, card) -> Macro.Card.delete ctx set card
 
     | Set results ->
         match results.GetAllResults().Head with
-        | Audit set -> failwith "Not implemented"
-        | AutoNumber set -> failwith "Not implemented"
-        | SetArguments.Clone (oldSet, newSet) -> Macro.cloneSet ctx oldSet newSet
-        | CreateHtmlLayout set -> failwith "Not implemented"
-        | SetArguments.Delete set -> failwith "Not implemented"
-        | DownloadImages set -> failwith "Not implemented"
-        | Rename (oldSet, newSet) -> failwith "Not implemented"
+        | Audit set -> Macro.Set.audit ctx set
+        | AutoNumber set -> Macro.Set.autonumber ctx set
+        | SetArguments.Copy (oldSet, newSet) -> Macro.Set.copy ctx oldSet newSet
+        | CreateHtmlLayout set -> Macro.Set.createHtmlLayout ctx set
+        | SetArguments.Delete set -> Macro.Set.delete ctx set
+        | DownloadImages set -> Macro.Set.downloadImages ctx set
+        | Rename (oldSet, newSet) -> Macro.Set.rename ctx oldSet newSet
