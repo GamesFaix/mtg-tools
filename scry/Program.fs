@@ -30,11 +30,11 @@ let configure args =
 
     let settings = {
         Query = config.["Query"]
-        InventoryPath = Environment.ExpandEnvironmentVariables(config.["InventoryPath"])
+        InventoryPath = config.["InventoryPath"] |> Environment.ExpandEnvironmentVariables
     }
 
-    if String.IsNullOrWhiteSpace(settings.InventoryPath) then failwith $"{nameof(settings.InventoryPath)} cannot be blank"
-    if String.IsNullOrWhiteSpace(settings.Query) then failwith $"{nameof(settings.Query)} cannot be blank"
+    if String.IsNullOrWhiteSpace settings.InventoryPath then failwith $"{nameof settings.InventoryPath} cannot be blank"
+    if String.IsNullOrWhiteSpace settings.Query then failwith $"{nameof settings.Query} cannot be blank"
 
     settings
 

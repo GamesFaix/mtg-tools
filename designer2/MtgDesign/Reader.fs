@@ -3,23 +3,22 @@
 open System
 open System.IO
 open System.Net.Http
+open System.Text.RegularExpressions
 open System.Xml
 open System.Xml.Linq
 open Sgml
-open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Model
-open System.Text.RegularExpressions
 
 let private baseUrl = "https://mtg.design"
 
-let private getXDoc (client: HttpClient) (cookie: string) (url: string) : XDocument Async =
+let private getXDoc (ctx: Context) (url: string) : XDocument Async =
     async {
         use request = new HttpRequestMessage ()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
-        request.Headers.Add ("Cookie", cookie)
+        request.Headers.Add ("Cookie", ctx.Cookie)
 
-        let! response = client.SendAsync request |> Async.AwaitTask
+        let! response = ctx.Http.SendAsync request |> Async.AwaitTask
         let! stream = response.Content.ReadAsStreamAsync () |> Async.AwaitTask
 
         use sgmlReader = new SgmlReader ()
@@ -73,11 +72,18 @@ let private getCardInfosFromSetPage (setName: string) (doc: XDocument) : CardInf
 
     cards
 
-let getSetCardInfos (client: HttpClient) (cookie: string) (setAbbrev: string) : CardInfo list Async =
+let getSetCardInfos (ctx: Context) (setAbbrev: string) : CardInfo list Async =
     async {
+        ctx.Log $"Loading list of cards in {setAbbrev}..."
+
         let url = $"{baseUrl}/set/{setAbbrev}"
-        let! page = getXDoc client cookie url
+        let! page = getXDoc ctx url
         let cards = getCardInfosFromSetPage setAbbrev page
+
+        ctx.Log $"Found {cards.Length} cards."
+        for c in cards do
+            ctx.Log $"\t{c.Name}"
+
         return cards
     }
 
@@ -139,30 +145,36 @@ let private getCardDetailsFromCardPage (doc: XDocument) : CardDetails =
     }
     card
 
-let getCardDetails (client: HttpClient) (cookie: string) (cardInfo: CardInfo) : CardDetails Async =
+let getCardDetails (ctx: Context) (cardInfo: CardInfo) : CardDetails Async =
     async {
+        ctx.Log $"\tParsing details for {cardInfo.Name}..."
+
         let url = $"{baseUrl}/i/{cardInfo.Id}/edit"
-        let! page = getXDoc client cookie url
+        let! page = getXDoc ctx url
         let cardDetails = getCardDetailsFromCardPage page
+
+        ctx.Log $"\tParsed {cardInfo.Name}."
         return { cardDetails with Id = cardInfo.Id }
     }
 
-let getSetCardDetails (client: HttpClient) (cookie: string) (setAbbrev: string) : CardDetails list Async =
+let getSetCardDetails (ctx: Context) (setAbbrev: string) : CardDetails list Async =
     async {
-        let! cardInfos = getSetCardInfos client cookie setAbbrev
+        ctx.Log "Parsing card details..."
+        let! cardInfos = getSetCardInfos ctx setAbbrev
 
         let! cardDetails =
             cardInfos
-            |> List.map (getCardDetails client cookie)
+            |> List.map (getCardDetails ctx)
             |> Async.Parallel
 
+        ctx.Log "Card details parsed."
         return cardDetails |> List.ofArray
     }
 
-let getCardImage (client: HttpClient) (card: CardInfo) : byte[] Async =
+let getCardImage (ctx: Context) (card: CardInfo) : byte[] Async =
     async {
         let url = $"{baseUrl}/i/{card.Id}.jpg"
-        let! response = client.GetAsync url |> Async.AwaitTask
+        let! response = ctx.Http.GetAsync url |> Async.AwaitTask
         let! bytes = response.Content.ReadAsByteArrayAsync () |> Async.AwaitTask
         return bytes
     }

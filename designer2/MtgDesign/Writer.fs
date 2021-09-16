@@ -50,7 +50,7 @@ let private buildRenderQuery (mode: SaveMode) (card: CardDetails) : string =
 
     query.ToString()
 
-let private renderCard (client: HttpClient) (cookie: string) (mode: SaveMode) (card: CardDetails) : unit Async =
+let private renderCard (ctx: Context) (mode: SaveMode) (card: CardDetails) : unit Async =
     async {
         let query = buildRenderQuery mode card
         let url =
@@ -62,16 +62,16 @@ let private renderCard (client: HttpClient) (cookie: string) (mode: SaveMode) (c
         use request = new HttpRequestMessage()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
-        request.Headers.Add ("Cookie", cookie)
+        request.Headers.Add ("Cookie", ctx.Cookie)
 
-        let! response = client.SendAsync request |> Async.AwaitTask
+        let! response = ctx.Http.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
         then failwith "render error" else ()
 
         return ()
     }
 
-let private shareCard (client: HttpClient) (cookie: string) (mode: SaveMode) (card: CardDetails) : unit Async =
+let private shareCard (ctx: Context) (mode: SaveMode) (card: CardDetails) : unit Async =
     async {
         let query = HttpUtility.ParseQueryString ""
         query.Add("edit", if mode = SaveMode.Create then "false" else card.Id)
@@ -82,39 +82,48 @@ let private shareCard (client: HttpClient) (cookie: string) (mode: SaveMode) (ca
         use request = new HttpRequestMessage ()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
-        request.Headers.Add("Cookie", cookie)
+        request.Headers.Add("Cookie", ctx.Cookie)
 
-        let! response = client.SendAsync request |> Async.AwaitTask
+        let! response = ctx.Http.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
         then failwith "share error" else ()
 
         return ()
     }
 
-let saveCard (client: HttpClient) (cookie: string) (mode: SaveMode) (card: CardDetails) : unit Async =
+let saveCard (ctx: Context) (mode: SaveMode) (card: CardDetails) : unit Async =
     async {
-        let! _ = renderCard client cookie mode card
-        let! _ = shareCard client cookie mode card
+        ctx.Log $"\tRendering ({card.Number}/{card.Total}) {card.Name}..."
+        let! _ = renderCard ctx mode card
+        ctx.Log $"\tSharing ({card.Number}/{card.Total}) {card.Name}..."
+        let! _ = shareCard ctx mode card
+        ctx.Log $"\tFinished ({card.Number}/{card.Total}) {card.Name}."
         return ()
     }
 
-let saveCards (client: HttpClient) (cookie: string) (mode: SaveMode) (cards: CardDetails list) : unit Async =
+let saveCards (ctx: Context) (mode: SaveMode) (cards: CardDetails list) : unit Async =
+    ctx.Log "Saving cards..."
     cards
-    |> List.map (saveCard client cookie mode)
+    |> List.map (saveCard ctx mode)
     |> Async.Sequential
     |> Async.Ignore
 
-let deleteCard (client: HttpClient) (card: CardInfo) : unit Async =
+let deleteCard (ctx: Context) (card: CardInfo) : unit Async =
     async {
+        ctx.Log $"\tDeleting {card.Set} - {card.Name}..."
+
         let url = $"{baseUrl}/set/{card.Set}/i/{card.Id}/delete"
-        let! response = client.GetAsync url |> Async.AwaitTask
+        let! response = ctx.Http.GetAsync url |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
         then failwith "delete error" else ()
+
+        ctx.Log $"\tDeleted {card.Set} - {card.Name}."
         return ()
     }
 
-let deleteCards (client: HttpClient) (cards: CardInfo list) : unit Async =
+let deleteCards (ctx: Context) (cards: CardInfo list) : unit Async =
+    ctx.Log "Deleting cards..."
     cards
-    |> List.map (deleteCard client)
+    |> List.map (deleteCard ctx)
     |> Async.Parallel
     |> Async.Ignore

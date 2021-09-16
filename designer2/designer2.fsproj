@@ -10,11 +10,19 @@
     <Compile Include="Model.fs" />
     <Compile Include="MtgDesign\Reader.fs" />
     <Compile Include="MtgDesign\Writer.fs" />
+    <Compile Include="FileSystem.fs" />
+    <Compile Include="Layout.fs" />
+    <Compile Include="CardProcessor.fs" />
+    <Compile Include="Auditor.fs" />
+    <Compile Include="Macro.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="SgmlReader.NetCore" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

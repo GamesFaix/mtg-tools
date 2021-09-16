@@ -1,5 +1,9 @@
 ﻿module GamesFaix.MtgTools.Designer.Model
 
+open Serilog
+open System.Net.Http
+open Serilog.Events
+
 /// <summary> Basic card info for identification. Used on card list pages. </summary>
 type CardInfo = {
     Id : string
@@ -65,3 +69,14 @@ type CollectorNumberGroup =
     | Artifact = 9
     | Land = 10
     | Token = 11
+
+/// <summary> Dependencies that are needed all over. </summary>
+type Context = {
+    Logger : ILogger
+    Http : HttpClient
+    Cookie : string
+}
+with
+    member this.Log (msg: string, ?level: LogEventLevel) =
+        let lvl = level |> Option.defaultValue LogEventLevel.Information
+        this.Logger.Write(lvl, msg)
