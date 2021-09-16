@@ -7,8 +7,9 @@ let cloneSet (ctx: Context) (oldAbbrev : string) (newAbbrev: string) : unit Asyn
     async {
         ctx.Log $"Cloning {oldAbbrev} to {newAbbrev}..."
         let! cardDetails = MtgDesign.Reader.getSetCardDetails ctx oldAbbrev
+        let centerFixes = FileSystem.loadCenterFixes ctx.RootDir oldAbbrev
         let processed =
-            CardProcessor.processCards ctx.Logger [] cardDetails
+            CardProcessor.processCards ctx.Logger centerFixes cardDetails
             |> List.map (fun c -> { c with Set = newAbbrev })
         let! _ = MtgDesign.Writer.saveCards ctx MtgDesign.Writer.SaveMode.Create processed
         ctx.Log "Done."

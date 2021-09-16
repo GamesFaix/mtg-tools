@@ -75,6 +75,7 @@ type Context = {
     Logger : ILogger
     Http : HttpClient
     Cookie : string
+    RootDir : string
 }
 with
     member this.Log (msg: string, ?level: LogEventLevel) =

@@ -1,6 +1,7 @@
 ﻿module GamesFaix.MtgTools.Designer.FileSystem
 
 open System.IO
+open System.Text.RegularExpressions
 open Newtonsoft.Json
 open Model
 
@@ -44,6 +45,10 @@ let getJsonDetailsPath (rootDir: string) (setAbbrev: string) : string =
     let dir = getSetDir rootDir setAbbrev
     $"{dir}/details.json"
 
+let getCenterFixesPath (rootDir: string) (setAbbrev: string) : string =
+    let dir = getSetDir rootDir setAbbrev
+    $"{dir}/center-fixes.txt"
+
 let saveCardImage (rootDir: string) (bytes: byte[]) (card: CardInfo) : unit Async =
     let path = getCardImagePath rootDir card
     saveFileBytes bytes path
@@ -83,3 +88,40 @@ let private deleteFolderIfExists (path: string) : unit =
 let deleteSetFolder (rootDir: string) (setAbbrev: string) : unit =
     let path = getSetDir rootDir setAbbrev
     deleteFolderIfExists path
+
+let private parseCenterFixes (text: string) : string list =
+    (* File format is like this:
+     ----------------------------------
+       # Comments
+       Card Title
+       Card Title # Comments
+
+       Card Title
+     ----------------------------------
+     One card title per line
+     Anything after # is a comment
+     Blank lines ignored
+     *)
+
+    let commentPattern = Regex("#.*")
+
+    text.Split("\n")
+    |> Seq.choose (fun line ->
+        let cleanLine = commentPattern.Replace(line, "").Trim()
+        match cleanLine with
+        | "" -> None
+        | x -> Some x
+    )
+    |> Seq.toList
+
+/// <summary> This loads the center-fix file for a set. This is used to
+/// compensate for a bug in mtg.design, where the IsCentered property is
+/// returned as false for all cards, even those that have been set to true.
+/// </summary>
+let loadCenterFixes (rootDir: string) (setAbbrev: string) : string list =
+    let path = getCenterFixesPath rootDir setAbbrev
+    match File.Exists path with
+    | false -> []
+    | true ->
+        File.ReadAllText path
+        |> parseCenterFixes
