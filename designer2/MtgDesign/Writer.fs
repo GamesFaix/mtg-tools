@@ -62,7 +62,7 @@ let private renderCard (ctx: Context) (mode: SaveMode) (card: CardDetails) : uni
         use request = new HttpRequestMessage()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
-        request.Headers.Add ("Cookie", ctx.Cookie)
+        request.Headers.Add ("Cookie", $"{ctx.Cookie.Key}={ctx.Cookie.Value}")
 
         let! response = ctx.Http.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
@@ -82,7 +82,7 @@ let private shareCard (ctx: Context) (mode: SaveMode) (card: CardDetails) : unit
         use request = new HttpRequestMessage ()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
-        request.Headers.Add("Cookie", ctx.Cookie)
+        request.Headers.Add("Cookie", $"{ctx.Cookie.Key}={ctx.Cookie.Value}")
 
         let! response = ctx.Http.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest

@@ -17,7 +17,7 @@ module Card =
             let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx oldSetAbbrev
             let card = cardInfos |> Seq.find (fun c -> c.Name = cardName)
             let! details = MtgDesign.Reader.getCardDetails ctx card
-            let centerFixes = FileSystem.loadCenterFixes ctx.RootDir oldSetAbbrev
+            let centerFixes = FileSystem.loadCenterFixes ctx.Workspace oldSetAbbrev
             let details = CardProcessor.processCard centerFixes details
             let details = { details with Set = newSetAbbrev }
             let! _ = MtgDesign.Writer.saveCards ctx MtgDesign.Writer.SaveMode.Create [details]
@@ -39,7 +39,7 @@ module Set =
     let private loadCards ctx setAbbrev =
         async {
             let! cards = MtgDesign.Reader.getSetCardDetails ctx setAbbrev
-            let centerFixes = FileSystem.loadCenterFixes ctx.RootDir setAbbrev
+            let centerFixes = FileSystem.loadCenterFixes ctx.Workspace setAbbrev
             return CardProcessor.processCards ctx.Logger centerFixes cards
         }
 
@@ -77,7 +77,7 @@ module Set =
             ctx.Log $"Creating HTML layout for set {setAbbrev}..."
             let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx setAbbrev
             let html = Layout.createHtmlLayout cardInfos
-            let! _ = FileSystem.saveHtmlLayout ctx.RootDir html setAbbrev
+            let! _ = FileSystem.saveHtmlLayout ctx.Workspace html setAbbrev
             ctx.Log "Done."
             return ()
         }
@@ -96,13 +96,13 @@ module Set =
             async {
                 ctx.Log $"Downloading image for card {card.Name}..."
                 let! bytes = MtgDesign.Reader.getCardImage ctx card
-                let! _ = FileSystem.saveCardImage ctx.RootDir bytes card
+                let! _ = FileSystem.saveCardImage ctx.Workspace bytes card
                 return ()
             }
 
         async {
             ctx.Log $"Downloading images for set {setAbbrev}..."
-            FileSystem.deleteSetFolder ctx.RootDir setAbbrev
+            FileSystem.deleteSetFolder ctx.Workspace setAbbrev
             let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx setAbbrev
             let! _ =
                 cardInfos

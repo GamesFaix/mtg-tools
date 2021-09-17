@@ -16,7 +16,7 @@ let private getStyleTag (heightInches: float, widthInches: float) : string =
     ] |> String.concat "\n"
 
 let private getImageTag (card: CardInfo) : string =
-    let file = FileSystem.getCardFileName card
+    let file = SetDirectory.getCardFileName card.Name
     $"<img src=\"{file}\"/>"
 
 let createHtmlLayout (cards : CardInfo list) : string =

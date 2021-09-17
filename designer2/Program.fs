@@ -40,15 +40,15 @@ let main args =
         try
             let parser = ArgumentParser.Create<MainArguments>(programName = "designer")
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
+            let workspace = WorkspaceDirectory.create settings.OutputDirectory
 
-            let! cookie =
-                FileSystem.loadCookie settings.OutputDirectory
+            let! cookie = FileSystem.loadCookie workspace
             if cookie.IsNone then failwith "Not logged in"
 
             let ctx : Context = {
                 Logger = logger
                 Http = new HttpClient()
-                RootDir = settings.OutputDirectory
+                Workspace = workspace
                 Cookie = cookie.Value
             }
 

@@ -16,7 +16,7 @@ let private getXDoc (ctx: Context) (url: string) : XDocument Async =
         use request = new HttpRequestMessage ()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
-        request.Headers.Add ("Cookie", ctx.Cookie)
+        request.Headers.Add ("Cookie", $"{ctx.Cookie.Key}={ctx.Cookie.Value}")
 
         let! response = ctx.Http.SendAsync request |> Async.AwaitTask
         let! stream = response.Content.ReadAsStreamAsync () |> Async.AwaitTask

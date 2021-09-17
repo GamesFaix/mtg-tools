@@ -14,7 +14,7 @@ let private timeout = TimeSpan.FromSeconds 30.0
 
 let private login (ctx: Context) : KeyValuePair<string, string> Async =
     async {
-        let! creds = FileSystem.loadCredentials ctx.RootDir
+        let! creds = FileSystem.loadCredentials ctx.Workspace
         if creds.IsNone then failwith "Could not load credentials"
 
         use driver = new ChromeDriver()
@@ -45,13 +45,13 @@ let private login (ctx: Context) : KeyValuePair<string, string> Async =
 
 let ensureValidCookie (ctx: Context) : unit Async =
     async {
-        let! previousCookie = FileSystem.loadCookie ctx.RootDir
+        let! previousCookie = FileSystem.loadCookie ctx.Workspace
 
         match previousCookie with
         | None ->
             // If no cookie, login and save cookie
             let! newCookie = login ctx
-            do! FileSystem.saveCookie ctx.RootDir newCookie
+            do! FileSystem.saveCookie ctx.Workspace newCookie
             return ()
         | Some c ->
             // Test cookie and refresh if required
@@ -66,7 +66,7 @@ let ensureValidCookie (ctx: Context) : unit Async =
 
             if not loaded then
                 let! newCookie = login ctx
-                do! FileSystem.saveCookie ctx.RootDir newCookie
+                do! FileSystem.saveCookie ctx.Workspace newCookie
 
             return ()
     }
