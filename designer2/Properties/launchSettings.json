@@ -2,7 +2,7 @@
   "profiles": {
     "designer2": {
       "commandName": "Project",
-      "commandLineArgs": "set clone rep abc"
+      "commandLineArgs": "login"
     }
   }
 }

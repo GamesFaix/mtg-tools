@@ -34,17 +34,21 @@ type SetArguments =
             | Rename _ -> "Renames a set"
 
 type MainArguments =
+    | [<CliPrefix(CliPrefix.None)>] Login
     | [<CliPrefix(CliPrefix.None)>] Card of CardArguments ParseResults
     | [<CliPrefix(CliPrefix.None)>] Set of SetArguments ParseResults
 
     interface IArgParserTemplate with
         member this.Usage =
             match this with
+            | Login -> "Authenticates and saves cookie for later requests"
             | Card _ -> "Allows manipulating individual cards"
             | Set _ -> "Allows manipulating sets (expansions) of cards"
 
 let getJob (ctx: Context) (results: MainArguments ParseResults) : unit Async =
     match results.GetAllResults().Head with
+
+    | Login -> Macro.login ctx
 
     | Card results ->
         match results.GetAllResults().Head with

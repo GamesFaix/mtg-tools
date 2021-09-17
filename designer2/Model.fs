@@ -81,3 +81,8 @@ with
     member this.Log (msg: string, ?level: LogEventLevel) =
         let lvl = level |> Option.defaultValue LogEventLevel.Information
         this.Logger.Write(lvl, msg)
+
+type Credentials = {
+    Email : string
+    Password : string
+}

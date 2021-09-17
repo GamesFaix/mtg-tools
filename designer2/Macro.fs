@@ -3,6 +3,12 @@
 open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Model
 
+let login (ctx: Context) : unit Async =
+    async {
+        do! MtgDesign.Auth.login ctx
+        return ()
+    }
+
 module Card =
 
     let copy (ctx: Context) (oldSetAbbrev: string) (cardName: string) (newSetAbbrev: string) : unit Async =

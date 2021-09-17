@@ -49,6 +49,12 @@ let getCenterFixesPath (rootDir: string) (setAbbrev: string) : string =
     let dir = getSetDir rootDir setAbbrev
     $"{dir}/center-fixes.txt"
 
+let getCookiePath (rootDir: string) : string =
+    $"{rootDir}/cookie.txt"
+
+let getCredentialsPath (rootDir: string) : string =
+    $"{rootDir}/credentials.json"
+
 let saveCardImage (rootDir: string) (bytes: byte[]) (card: CardInfo) : unit Async =
     let path = getCardImagePath rootDir card
     saveFileBytes bytes path
@@ -68,17 +74,20 @@ let saveJsonDetails (rootDir: string) (cards: CardDetails list) (setAbbrev: stri
     let path = getJsonDetailsPath rootDir setAbbrev
     saveFileText json path
 
-let loadJsonDetails (rootDir: string) (setAbbrev: string) : CardDetails list option Async =
+let private loadFromJson<'a> (path: string) : 'a option Async =
     async {
         try
-            let path = getJsonDetailsPath rootDir setAbbrev
             let! json = File.ReadAllTextAsync path |> Async.AwaitTask
-            let cards = JsonConvert.DeserializeObject<CardDetails list> json
-            return Some cards
+            let result = JsonConvert.DeserializeObject<'a> json
+            return Some result
         with
         | _ ->
             return None
     }
+
+let loadJsonDetails (rootDir: string) (setAbbrev: string) : CardDetails list option Async =
+    let path = getJsonDetailsPath rootDir setAbbrev
+    loadFromJson path
 
 let private deleteFolderIfExists (path: string) : unit =
     if Directory.Exists path
@@ -125,3 +134,11 @@ let loadCenterFixes (rootDir: string) (setAbbrev: string) : string list =
     | true ->
         File.ReadAllText path
         |> parseCenterFixes
+
+let saveCookie (rootDir: string) (cookie: string) : unit =
+    let path = getCookiePath rootDir
+    File.WriteAllText(path, cookie)
+
+let loadCredentials (rootDir: string) : Credentials option Async =
+    let path = getCredentialsPath rootDir
+    loadFromJson path
