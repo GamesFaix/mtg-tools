@@ -29,26 +29,33 @@ let configure args =
 
 [<EntryPoint>]
 let main args =
-    let settings = configure args
+    async {
+        let settings = configure args
 
-    let logger =
-        LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateLogger()
+        let logger =
+            LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger()
 
-    let ctx : Context = {
-        Logger = logger
-        Http = new HttpClient()
-        RootDir = settings.OutputDirectory
-        Cookie = ""
+        let! cookie =
+            FileSystem.loadCookie settings.OutputDirectory
+        if cookie.IsNone then failwith "Not logged in"
+
+        let ctx : Context = {
+            Logger = logger
+            Http = new HttpClient()
+            RootDir = settings.OutputDirectory
+            Cookie = cookie.Value
+        }
+
+        try
+            let parser = ArgumentParser.Create<MainArguments>(programName = "designer")
+            let results = parser.Parse(inputs = args, raiseOnUsage = true)
+            let job = Cli.getJob ctx results
+            job |> Async.RunSynchronously
+            return 0
+        with e ->
+            logger.Error(e, "An unexpected error occurred.")
+            return 1
     }
-
-    try
-        let parser = ArgumentParser.Create<MainArguments>(programName = "designer")
-        let results = parser.Parse(inputs = args, raiseOnUsage = true)
-        let job = Cli.getJob ctx results
-        job |> Async.RunSynchronously
-        0 // return an integer exit code
-    with e ->
-        logger.Error(e, "An unexpected error occurred.")
-        1
+    |> Async.RunSynchronously

@@ -4,6 +4,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Newtonsoft.Json
 open Model
+open System.Collections.Generic
 
 let private createDirectoryIfMissing (path: string) : unit =
     if Directory.Exists path then ()
@@ -50,7 +51,7 @@ let getCenterFixesPath (rootDir: string) (setAbbrev: string) : string =
     $"{dir}/center-fixes.txt"
 
 let getCookiePath (rootDir: string) : string =
-    $"{rootDir}/cookie.txt"
+    $"{rootDir}/cookie.json"
 
 let getCredentialsPath (rootDir: string) : string =
     $"{rootDir}/credentials.json"
@@ -67,12 +68,15 @@ let savePdfLayout (rootDir: string) (bytes: byte[]) (setAbbrev: string) : unit A
     let path = getPdfLayoutPath rootDir setAbbrev
     saveFileBytes bytes path
 
-let saveJsonDetails (rootDir: string) (cards: CardDetails list) (setAbbrev: string) : unit Async =
+let private saveToJson<'a> (path: string) (data: 'a) : unit Async =
     let options = JsonSerializerSettings()
     options.Formatting <- Formatting.Indented
-    let json = JsonConvert.SerializeObject(cards, options)
-    let path = getJsonDetailsPath rootDir setAbbrev
+    let json = JsonConvert.SerializeObject(data, options)
     saveFileText json path
+
+let saveJsonDetails (rootDir: string) (cards: CardDetails list) (setAbbrev: string) : unit Async =
+    let path = getJsonDetailsPath rootDir setAbbrev
+    saveToJson path cards
 
 let private loadFromJson<'a> (path: string) : 'a option Async =
     async {
@@ -135,10 +139,14 @@ let loadCenterFixes (rootDir: string) (setAbbrev: string) : string list =
         File.ReadAllText path
         |> parseCenterFixes
 
-let saveCookie (rootDir: string) (cookie: string) : unit =
+let saveCookie (rootDir: string) (cookie: KeyValuePair<string, string>) : unit Async =
     let path = getCookiePath rootDir
-    File.WriteAllText(path, cookie)
+    saveToJson path cookie
 
 let loadCredentials (rootDir: string) : Credentials option Async =
     let path = getCredentialsPath rootDir
+    loadFromJson path
+
+let loadCookie (rootDir: string) : KeyValuePair<string, string> option Async =
+    let path = getCookiePath rootDir
     loadFromJson path

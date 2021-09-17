@@ -3,6 +3,7 @@
 open Serilog
 open System.Net.Http
 open Serilog.Events
+open System.Collections.Generic
 
 /// <summary> Basic card info for identification. Used on card list pages. </summary>
 type CardInfo = {
@@ -74,7 +75,7 @@ type CollectorNumberGroup =
 type Context = {
     Logger : ILogger
     Http : HttpClient
-    Cookie : string
+    Cookie : KeyValuePair<string, string>
     RootDir : string
 }
 with

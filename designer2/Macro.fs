@@ -5,7 +5,7 @@ open GamesFaix.MtgTools.Designer.Model
 
 let login (ctx: Context) : unit Async =
     async {
-        do! MtgDesign.Auth.login ctx
+        let! _ = MtgDesign.Auth.ensureValidCookie ctx
         return ()
     }
 
