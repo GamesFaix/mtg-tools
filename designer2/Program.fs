@@ -37,20 +37,21 @@ let main args =
                 .WriteTo.Console()
                 .CreateLogger()
 
-        let! cookie =
-            FileSystem.loadCookie settings.OutputDirectory
-        if cookie.IsNone then failwith "Not logged in"
-
-        let ctx : Context = {
-            Logger = logger
-            Http = new HttpClient()
-            RootDir = settings.OutputDirectory
-            Cookie = cookie.Value
-        }
-
         try
             let parser = ArgumentParser.Create<MainArguments>(programName = "designer")
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
+
+            let! cookie =
+                FileSystem.loadCookie settings.OutputDirectory
+            if cookie.IsNone then failwith "Not logged in"
+
+            let ctx : Context = {
+                Logger = logger
+                Http = new HttpClient()
+                RootDir = settings.OutputDirectory
+                Cookie = cookie.Value
+            }
+
             let job = Cli.getJob ctx results
             job |> Async.RunSynchronously
             return 0
