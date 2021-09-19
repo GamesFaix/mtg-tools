@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "designer3": {
+      "commandName": "Project",
+      "commandLineArgs": "workspace"
+    }
+  }
+}
