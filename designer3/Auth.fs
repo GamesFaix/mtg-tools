@@ -33,9 +33,14 @@ let private loadCookieFile (workspace: Workspace.WorkspaceDirectory) =
     FileSystem.loadFromJson<Cookie> workspace.Cookie
 
 module private Browser =
+    let private getDriver () =
+        let options = ChromeOptions()
+        options.AddArgument("--headless")
+        let driver = new ChromeDriver(options)
+        driver
 
     let login (credentials: Credentials) =
-        use driver = new ChromeDriver()
+        use driver = getDriver ()
         driver.Navigate().GoToUrl loginUrl
 
         let emailInput =
@@ -61,7 +66,7 @@ module private Browser =
         | Some c -> Ok { Name = c.Name; Value = c.Value }
 
     let testCookie (cookie: Cookie) : Result<unit, string> =
-        let driver = new ChromeDriver()
+        let driver = getDriver ()
         driver.Manage().Cookies.AddCookie(Cookie(cookie.Name, cookie.Value))
         driver.Navigate().GoToUrl homeUrl
         let loaded =

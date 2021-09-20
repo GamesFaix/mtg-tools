@@ -1,8 +1,6 @@
 ﻿module GamesFaix.MtgTools.Designer.Program
 
 open Argu
-open Serilog.Events
-open Cli
 
 [<EntryPoint>]
 let main args =
@@ -10,11 +8,11 @@ let main args =
         let! ctx = Context.loadContext ()
         ctx.Log.Information "mtg.design.cli"
 
-        let parser = ArgumentParser.Create<MainArguments>(programName = "designer")
+        let parser = ArgumentParser.Create<Cli.Args>(programName = "designer")
 
         try
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
-            ctx.Log.Information (results.ToString())
+            ctx.Log.Debug (results.ToString())
 
             let! job = Cli.getJob ctx results
 

@@ -62,6 +62,7 @@ with
 
 let logger =
     LoggerConfiguration()
+        .MinimumLevel.Debug()
         .WriteTo.Console()
         .CreateLogger()
 
