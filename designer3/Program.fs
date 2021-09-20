@@ -8,13 +8,13 @@ let main args =
         let! ctx = Context.loadContext ()
         ctx.Log.Information "mtg.design.cli"
 
-        let parser = ArgumentParser.Create<Cli.Args>(programName = "designer")
+        let parser = ArgumentParser.Create<Cli.Main.Args>(programName = "designer")
 
         try
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
             ctx.Log.Debug (results.ToString())
 
-            let! job = Cli.getJob ctx results
+            let! job = Cli.Main.getJob ctx results
 
             match job with
             | Ok () ->

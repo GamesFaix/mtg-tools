@@ -16,7 +16,12 @@
     <Compile Include="MtgDesign\Reader.fs" />
     <Compile Include="MtgDesign\Writer.fs" />
     <Compile Include="CardProcessor.fs" />
-    <Compile Include="Cli.fs" />
+    <Compile Include="Cli\Types.fs" />
+    <Compile Include="Cli\Workspace.fs" />
+    <Compile Include="Cli\Login.fs" />
+    <Compile Include="Cli\Card.fs" />
+    <Compile Include="Cli\Set.fs" />
+    <Compile Include="Cli\Main.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

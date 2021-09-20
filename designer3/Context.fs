@@ -1,8 +1,6 @@
 ﻿module GamesFaix.MtgTools.Designer.Context
 
-open System.Net.Http
 open Serilog
-open Serilog.Events
 open Workspace
 
 (*
@@ -84,5 +82,4 @@ let loadContext () : Context Async = async {
                 Workspace = workspace
                 Cookie = cookie
             }
-
 }

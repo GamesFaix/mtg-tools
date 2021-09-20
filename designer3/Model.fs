@@ -1,11 +1,5 @@
 ﻿module GamesFaix.MtgTools.Designer.Model
 
-open Serilog
-open System.Net.Http
-open Serilog.Events
-open System.Collections.Generic
-open System.IO
-
 /// <summary> Basic card info for identification. Used on card list pages. </summary>
 type CardInfo = {
     Id : string
