@@ -12,6 +12,10 @@
     <Compile Include="Workspace.fs" />
     <Compile Include="Auth.fs" />
     <Compile Include="Context.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="MtgDesign\Reader.fs" />
+    <Compile Include="MtgDesign\Writer.fs" />
+    <Compile Include="CardProcessor.fs" />
     <Compile Include="Cli.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -23,6 +27,7 @@
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="93.0.4577.6300" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+    <PackageReference Include="SgmlReader.NetStandard" Version="1.8.14.1" />
   </ItemGroup>
 
 </Project>
