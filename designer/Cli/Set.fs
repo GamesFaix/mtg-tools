@@ -92,9 +92,8 @@ module Layout =
         async {
             ctx.Log.Information $"Creating HTML layout for set {set}..."
             let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
-            let setDir = ctx.Workspace.Set set
-            let html = Layout.createHtmlLayout setDir cardInfos
-            do! FileSystem.saveFileText html setDir.HtmlLayout
+            let html = Layout.createHtmlLayout cardInfos
+            do! FileSystem.saveFileText html (ctx.Workspace.Set(set).HtmlLayout)
             ctx.Log.Information "Done."
             return Ok ()
         }

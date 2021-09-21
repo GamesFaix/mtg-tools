@@ -1,7 +1,7 @@
 ﻿module GamesFaix.MtgTools.Designer.Layout
 
 open Model
-open System.IO
+open Workspace
 
 // 1/64th less than 3.5 x 2.5
 let private cardHeightInches = 3.46875
@@ -20,13 +20,12 @@ let private styleTag =
         "</style>"
     ] |> String.concat "\n"
 
-let private getImageTag (imageDirectory: Workspace.SetDirectory) (card: CardInfo) : string =
-    let file = imageDirectory.CardImage(card.Name)
-               |> Path.GetFileName
+let private getImageTag (card: CardInfo) : string =
+    let file = SetDirectory.getCardFileName card.Name
     $"<img src=\"{file}\"/>"
 
-let createHtmlLayout (imageDirectory: Workspace.SetDirectory) (cards: CardInfo list) : string =
-    let cardTags = cards |> List.map (getImageTag imageDirectory)
+let createHtmlLayout (cards: CardInfo list) : string =
+    let cardTags = cards |> List.map getImageTag
 
     [
         "<html>"
