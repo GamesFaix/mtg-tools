@@ -22,15 +22,18 @@ let private loadConfig () =
 let private saveConfig (cfg: Configuration) =
     FileSystem.saveToJson cfg "./configuration.json"
 
-let getWorkspace () =
-    loadConfig ()
-    |> Async.map (Option.map (fun c -> c.Workspace))
+let getWorkspace () = async {
+    let! cfg = loadConfig ()
+    return cfg |> Option.map (fun c -> c.Workspace)
+}
 
-let setWorkspace (directory: string) : unit Async =
-    loadConfig ()
-    |> Async.map (function Some cfg -> { cfg with Workspace = directory }
-                         | None -> { Workspace = directory })
-    |> Async.bind saveConfig
+let setWorkspace (directory: string) : unit Async = async {
+    let! maybeConfig = loadConfig ()
+    let cfg = match maybeConfig with
+              | Some cfg -> { cfg with Workspace = directory }
+              | None -> { Workspace = directory }
+    return! saveConfig cfg
+}
 
 type EmptyContext = {
     Log : ILogger

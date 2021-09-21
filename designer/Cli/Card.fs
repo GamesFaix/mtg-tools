@@ -96,7 +96,7 @@ type Args =
 let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
     match ctx, (results.GetAllResults().Head) with
     | Empty _, _
-    | Workspace _, _ -> Error "This operation requires a logged in user." |> Async.fromValue
+    | Workspace _, _ -> Error "This operation requires a logged in user." |> async.Return
     | User ctx, Copy results -> Copy.getJob ctx results
     | User ctx, Delete results -> Delete.getJob ctx results
     | User ctx, Move results -> Move.getJob ctx results

@@ -198,7 +198,7 @@ type Args =
 let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
     match ctx with
     | Empty _
-    | Workspace _ -> Error "This operation requires a logged in user." |> Async.fromValue
+    | Workspace _ -> Error "This operation requires a logged in user." |> async.Return
     | User ctx ->
         match results.GetAllResults().Head with
         | Audit results -> Audit.getJob ctx results

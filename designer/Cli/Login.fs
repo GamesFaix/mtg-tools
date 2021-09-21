@@ -30,6 +30,6 @@ let getJob (context: Context) (results: Args ParseResults) : JobResult =
 
     match context with
     | Context.Empty _ ->
-        Error "No workspace directory is set. Please set one before logging in." |> Async.fromValue
+        Error "No workspace directory is set. Please set one before logging in." |> async.Return
     | Context.Workspace ctx -> login ctx.Workspace
     | Context.User ctx -> login ctx.Workspace

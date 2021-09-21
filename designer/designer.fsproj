@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Utils.fs" />
     <Compile Include="FileSystem.fs" />
     <Compile Include="Workspace.fs" />
     <Compile Include="Auth.fs" />
