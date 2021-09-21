@@ -33,20 +33,15 @@ module Audit =
                 | Set _ -> "The set abbreviation."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let set = args |> Seq.choose (fun a -> match a with Set x -> Some x | _ -> None) |> Seq.tryHead
-
-        match set with
-        | Some set ->
-            async {
-                ctx.Log.Information $"Auditing set {set}..."
-                let! cards = loadCards ctx set
-                Auditor.findIssues cards
-                |> Auditor.logIssues ctx.Log
-                ctx.Log.Information "Done."
-                return Ok ()
-            }
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let set = results.GetResult Set
+        async {
+            ctx.Log.Information $"Auditing set {set}..."
+            let! cards = loadCards ctx set
+            Auditor.findIssues cards
+            |> Auditor.logIssues ctx.Log
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
 module Copy =
     type Args =
@@ -60,14 +55,9 @@ module Copy =
                 | To _ -> "The copy's set abbreviation."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let fromSet = args |> Seq.choose (fun a -> match a with From x -> Some x | _ -> None) |> Seq.tryHead
-        let toSet = args |> Seq.choose (fun a -> match a with To x -> Some x | _ -> None) |> Seq.tryHead
-
-        match fromSet, toSet with
-        | Some fromSet, Some toSet ->
-            copyOrRename ctx fromSet toSet SaveMode.Create
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let fromSet = results.GetResult From
+        let toSet = results.GetResult To
+        copyOrRename ctx fromSet toSet SaveMode.Create
 
 module Delete =
     type Args =
@@ -79,19 +69,35 @@ module Delete =
                 | Set _ -> "The set abbreviation."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let set = args |> Seq.choose (fun a -> match a with Set x -> Some x | _ -> None) |> Seq.tryHead
+        let set = results.GetResult Set
+        async {
+            ctx.Log.Information $"Deleting set {set}..."
+            let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
+            do! MtgDesign.Writer.deleteCards ctx cardInfos
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
-        match set with
-        | Some set ->
-            async {
-                ctx.Log.Information $"Deleting set {set}..."
-                let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
-                do! MtgDesign.Writer.deleteCards ctx cardInfos
-                ctx.Log.Information "Done."
-                return Ok ()
-            }
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+module Layout =
+    type Args =
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
+
+        interface IArgParserTemplate with
+            member this.Usage =
+                match this with
+                | Set _ -> "The set abbreviation."
+
+    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
+        let set = results.GetResult Set
+        async {
+            ctx.Log.Information $"Creating HTML layout for set {set}..."
+            let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
+            let setDir = ctx.Workspace.Set set
+            let html = Layout.createHtmlLayout setDir cardInfos
+            do! FileSystem.saveFileText html setDir.HtmlLayout
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
 module Pull =
     type Args =
@@ -173,6 +179,7 @@ type Args =
     | [<CliPrefix(CliPrefix.None)>] Audit of Audit.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Copy of Copy.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Delete of Delete.Args ParseResults
+    | [<CliPrefix(CliPrefix.None)>] Layout of Layout.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Pull of Pull.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Rename of Rename.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Scrub of Scrub.Args ParseResults
@@ -183,6 +190,7 @@ type Args =
             | Audit _ -> "Audits a set."
             | Copy _ -> "Copies a set."
             | Delete _ -> "Deletes a set."
+            | Layout _ -> "Creates and HTML layout for printing a set."
             | Pull _ -> "Downloads images and data for a set."
             | Rename _ -> "Renames a set."
             | Scrub _ -> "Downloads cards, processes them, then posts updates. Fixes things like collectors numbers."
@@ -196,6 +204,7 @@ let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
         | Audit results -> Audit.getJob ctx results
         | Copy results -> Copy.getJob ctx results
         | Delete results -> Delete.getJob ctx results
+        | Layout results -> Layout.getJob ctx results
         | Pull results -> Pull.getJob ctx results
         | Rename results -> Rename.getJob ctx results
         | Scrub results -> Scrub.getJob ctx results

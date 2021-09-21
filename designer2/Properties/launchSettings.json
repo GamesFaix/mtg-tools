@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "designer2": {
-      "commandName": "Project",
-      "commandLineArgs": "login"
-    }
-  }
-}
