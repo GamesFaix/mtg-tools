@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "designer3": {
+    "designer": {
       "commandName": "Project",
-      "commandLineArgs": "set layout tst"
+      "commandLineArgs": "--help"
     }
   }
 }

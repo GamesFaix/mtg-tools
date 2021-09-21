@@ -5,5 +5,5 @@ This repository contains various scripts and utilities for Magic: the Gathering 
 ## Tools
 
 * `dck2cod` - Converts decks from Shandalar's proprietary `.dck` format to Cockatrice's `.cod` format.
-* `designer` - Webscrapers and scripts for automating the custom card creation site [mtg.design](mtg.design).
+* `designer` - CLI for automating bulk operations for the custom card creation site [mtg.design](mtg.design).
 * `scry` - Search a CSV inventory file using Scryfall's search engine.
