@@ -5,7 +5,7 @@ open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Context
 
 type Args =
-    | [<CliPrefix(CliPrefix.None)>] Dir of string option
+    | [<AltCommandLine("-d")>] Dir of string option
 
     interface IArgParserTemplate with
         member this.Usage =
@@ -13,8 +13,7 @@ type Args =
             | Dir _ -> "Directory to set as workspace."
 
 let getJob (ctx: Context) (results: Args ParseResults) : JobResult = async {
-    let args = results.GetAllResults()
-    let dir = args |> Seq.choose (fun a -> match a with Dir x -> x | _ -> None) |> Seq.tryHead
+    let dir = results.GetResult Args.Dir
 
     match dir with
     | Some d ->

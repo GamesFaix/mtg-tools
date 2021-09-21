@@ -25,7 +25,7 @@ let private copyOrRename (ctx: UserContext) (fromSet: string) (toSet: string) (m
 
 module Audit =
     type Args =
-        | [<CliPrefix(CliPrefix.None)>] Set of string
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -50,8 +50,8 @@ module Audit =
 
 module Copy =
     type Args =
-        | [<AltCommandLine("-f")>] From of string
-        | [<AltCommandLine("-t")>] To of string
+        | [<Mandatory; AltCommandLine("-f")>] From of string
+        | [<Mandatory; AltCommandLine("-t")>] To of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -71,7 +71,7 @@ module Copy =
 
 module Delete =
     type Args =
-        | [<CliPrefix(CliPrefix.None)>] Set of string
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -95,7 +95,7 @@ module Delete =
 
 module Pull =
     type Args =
-        | [<CliPrefix(CliPrefix.None)>] Set of string
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -103,46 +103,41 @@ module Pull =
                 | Set _ -> "The set abbreviation."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let set = args |> Seq.choose (fun a -> match a with Set x -> Some x | _ -> None) |> Seq.tryHead
+        let set = results.GetResult Set
+        let setDir = ctx.Workspace.Set(set)
 
-        match set with
-        | Some set ->
-            let setDir = ctx.Workspace.Set(set)
-
-            let downloadImage (card: CardDetails) =
-                async {
-                    ctx.Log.Information $"\tDownloading image for card {card.Name}..."
-                    let! bytes = MtgDesign.Reader.getCardImage (card |> CardDetails.toInfo)
-                    let path = setDir.CardImage(card.Name)
-                    return! FileSystem.saveFileBytes bytes path
-                }
-
+        let downloadImage (card: CardDetails) =
             async {
-                ctx.Log.Information $"Pulling latest for set {set}..."
-                let! details = MtgDesign.Reader.getSetCardDetails ctx set
-
-                ctx.Log.Information $"\tSaving data file..."
-                do! FileSystem.saveToJson details setDir.JsonDetails
-
-                // Clear old images
-                do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
-
-                // Download images
-                do! details
-                    |> List.map downloadImage
-                    |> Async.Parallel
-                    |> Async.Ignore
-
-                ctx.Log.Information "Done."
-                return Ok ()
+                ctx.Log.Information $"\tDownloading image for card {card.Name}..."
+                let! bytes = MtgDesign.Reader.getCardImage (card |> CardDetails.toInfo)
+                let path = setDir.CardImage(card.Name)
+                return! FileSystem.saveFileBytes bytes path
             }
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+
+        async {
+            ctx.Log.Information $"Pulling latest for set {set}..."
+            let! details = MtgDesign.Reader.getSetCardDetails ctx set
+
+            ctx.Log.Information $"\tSaving data file..."
+            do! FileSystem.saveToJson details setDir.JsonDetails
+
+            // Clear old images
+            do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
+
+            // Download images
+            do! details
+                |> List.map downloadImage
+                |> Async.Parallel
+                |> Async.Ignore
+
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
 module Rename =
     type Args =
-        | [<AltCommandLine("-f")>] From of string
-        | [<AltCommandLine("-t")>] To of string
+        | [<Mandatory; AltCommandLine("-f")>] From of string
+        | [<Mandatory; AltCommandLine("-t")>] To of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -151,18 +146,13 @@ module Rename =
                 | To _ -> "The new set abbreviation."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let fromSet = args |> Seq.choose (fun a -> match a with From x -> Some x | _ -> None) |> Seq.tryHead
-        let toSet = args |> Seq.choose (fun a -> match a with To x -> Some x | _ -> None) |> Seq.tryHead
-
-        match fromSet, toSet with
-        | Some fromSet, Some toSet ->
-            copyOrRename ctx fromSet toSet SaveMode.Edit
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let fromSet = results.GetResult From
+        let toSet = results.GetResult To
+        copyOrRename ctx fromSet toSet SaveMode.Edit
 
 module Scrub =
     type Args =
-        | [<CliPrefix(CliPrefix.None)>] Set of string
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -170,24 +160,20 @@ module Scrub =
                 | Set _ -> "The set abbreviation."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let set = args |> Seq.choose (fun a -> match a with Set x -> Some x | _ -> None) |> Seq.tryHead
-
-        match set with
-        | Some set ->
-            async {
-                ctx.Log.Information $"Scrubbing set {set}..."
-                let! cards = loadCards ctx set
-                let! _ = MtgDesign.Writer.saveCards ctx SaveMode.Edit cards
-                ctx.Log.Information "Done."
-                return Ok ()
-            }
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let set = results.GetResult Set
+        async {
+            ctx.Log.Information $"Scrubbing set {set}..."
+            let! cards = loadCards ctx set
+            let! _ = MtgDesign.Writer.saveCards ctx SaveMode.Edit cards
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Audit of Audit.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Copy of Copy.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Delete of Delete.Args ParseResults
+    | [<CliPrefix(CliPrefix.None)>] Pull of Pull.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Rename of Rename.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Scrub of Scrub.Args ParseResults
 
@@ -197,6 +183,7 @@ type Args =
             | Audit _ -> "Audits a set."
             | Copy _ -> "Copies a set."
             | Delete _ -> "Deletes a set."
+            | Pull _ -> "Downloads images and data for a set."
             | Rename _ -> "Renames a set."
             | Scrub _ -> "Downloads cards, processes them, then posts updates. Fixes things like collectors numbers."
 
@@ -209,5 +196,6 @@ let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
         | Audit results -> Audit.getJob ctx results
         | Copy results -> Copy.getJob ctx results
         | Delete results -> Delete.getJob ctx results
+        | Pull results -> Pull.getJob ctx results
         | Rename results -> Rename.getJob ctx results
         | Scrub results -> Scrub.getJob ctx results

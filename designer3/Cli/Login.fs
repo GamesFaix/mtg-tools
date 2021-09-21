@@ -17,10 +17,9 @@ type Args =
             | SaveCreds _ -> "If true, saves credentials to disc. Defaults to false."
 
 let getJob (context: Context) (results: Args ParseResults) : JobResult =
-    let args = results.GetAllResults()
-    let email = args |> Seq.choose (fun a -> match a with Email x -> x | _ -> None) |> Seq.tryHead
-    let pass = args |> Seq.choose (fun a -> match a with Pass x -> x | _ -> None) |> Seq.tryHead
-    let saveCreds = args |> Seq.choose (fun a -> match a with SaveCreds x -> x | _ -> None) |> Seq.tryHead |> Option.defaultValue false
+    let email = results.GetResult Email
+    let pass = results.GetResult Pass
+    let saveCreds = results.GetResult SaveCreds |> Option.defaultValue false
 
     let login workspace =
         let creds : Auth.Credentials option =

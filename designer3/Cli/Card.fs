@@ -22,9 +22,9 @@ let private copyOrMove (ctx: UserContext) (name: string) (fromSet: string) (toSe
 
 module Copy =
     type Args =
-        | [<AltCommandLine("-f")>] FromSet of string
-        | [<AltCommandLine("-t")>] ToSet of string
-        | [<AltCommandLine("-n")>] Name of string
+        | [<Mandatory; AltCommandLine("-f")>] FromSet of string
+        | [<Mandatory; AltCommandLine("-t")>] ToSet of string
+        | [<Mandatory; AltCommandLine("-n")>] Name of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -34,20 +34,15 @@ module Copy =
                 | Name _ -> "The card's name."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let fromSet = args |> Seq.choose (fun a -> match a with FromSet x -> Some x | _ -> None) |> Seq.tryHead
-        let toSet = args |> Seq.choose (fun a -> match a with ToSet x -> Some x | _ -> None) |> Seq.tryHead
-        let name = args |> Seq.choose (fun a -> match a with Name x -> Some x | _ -> None) |> Seq.tryHead
-
-        match fromSet, toSet, name with
-        | Some fromSet, Some toSet, Some name ->
-            copyOrMove ctx name fromSet toSet SaveMode.Create
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let fromSet = results.GetResult FromSet
+        let toSet = results.GetResult ToSet
+        let name = results.GetResult Name
+        copyOrMove ctx name fromSet toSet SaveMode.Create
 
 module Delete =
     type Args =
-        | [<CliPrefix(CliPrefix.None)>] Set of string
-        | [<CliPrefix(CliPrefix.None)>] Name of string
+        | [<Mandatory; AltCommandLine("-s")>] Set of string
+        | [<Mandatory; AltCommandLine("-n")>] Name of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -56,27 +51,22 @@ module Delete =
                 | Name _ -> "The card's name."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let set = args |> Seq.choose (fun a -> match a with Set x -> Some x | _ -> None) |> Seq.tryHead
-        let name = args |> Seq.choose (fun a -> match a with Name x -> Some x | _ -> None) |> Seq.tryHead
-
-        match set, name with
-        | Some set, Some name ->
-            async {
-                ctx.Log.Information $"Deleting card {set} - {name}..."
-                let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
-                let card = cardInfos |> Seq.find (fun c -> c.Name = name)
-                do! MtgDesign.Writer.deleteCard ctx card
-                ctx.Log.Information "Done."
-                return Ok ()
-            }
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let set = results.GetResult Set
+        let name = results.GetResult Name
+        async {
+            ctx.Log.Information $"Deleting card {set} - {name}..."
+            let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
+            let card = cardInfos |> Seq.find (fun c -> c.Name = name)
+            do! MtgDesign.Writer.deleteCard ctx card
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
 module Move =
     type Args =
-        | [<AltCommandLine("-f")>] FromSet of string
-        | [<AltCommandLine("-t")>] ToSet of string
-        | [<AltCommandLine("-n")>] Name of string
+        | [<Mandatory; AltCommandLine("-f")>] FromSet of string
+        | [<Mandatory; AltCommandLine("-t")>] ToSet of string
+        | [<Mandatory; AltCommandLine("-n")>] Name of string
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -86,15 +76,10 @@ module Move =
                 | Name _ -> "The card's name."
 
     let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let args = results.GetAllResults()
-        let fromSet = args |> Seq.choose (fun a -> match a with FromSet x -> Some x | _ -> None) |> Seq.tryHead
-        let toSet = args |> Seq.choose (fun a -> match a with ToSet x -> Some x | _ -> None) |> Seq.tryHead
-        let name = args |> Seq.choose (fun a -> match a with Name x -> Some x | _ -> None) |> Seq.tryHead
-
-        match fromSet, toSet, name with
-        | Some fromSet, Some toSet, Some name ->
-            copyOrMove ctx name fromSet toSet SaveMode.Edit
-        | _ -> Error "Invalid arguments." |> Async.fromValue
+        let fromSet = results.GetResult FromSet
+        let toSet = results.GetResult ToSet
+        let name = results.GetResult Name
+        copyOrMove ctx name fromSet toSet SaveMode.Edit
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Copy of Copy.Args ParseResults
