@@ -36,3 +36,14 @@ let saveToJson<'a> (data: 'a) (path: string) : unit Async =
     options.Formatting <- Formatting.Indented
     let json = JsonConvert.SerializeObject(data, options)
     saveFileText json path
+
+let deleteFilesInFolderMatching (dir: string) (filter : string -> bool) = async {
+    let files =
+        Directory.GetFiles(dir, "*", SearchOption.AllDirectories)
+        |> Seq.filter filter
+
+    for f in files do
+        File.Delete f
+
+    return ()
+}

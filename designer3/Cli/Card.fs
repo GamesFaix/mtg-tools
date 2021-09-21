@@ -6,9 +6,9 @@ open GamesFaix.MtgTools.Designer.Context
 
 type private SaveMode = MtgDesign.Writer.SaveMode
 
-let private copyOrRename (ctx: UserContext) (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) =
+let private copyOrMove (ctx: UserContext) (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) =
     async {
-        let action = if mode = SaveMode.Create then "Copying" else "Renaming"
+        let action = if mode = SaveMode.Create then "Copying" else "Moving"
         ctx.Log.Information $"{action} card {name} from {fromSet} to {toSet}..."
         let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx fromSet
         let card = cardInfos |> Seq.find (fun c -> c.Name = name)
@@ -41,7 +41,7 @@ module Copy =
 
         match fromSet, toSet, name with
         | Some fromSet, Some toSet, Some name ->
-            copyOrRename ctx name fromSet toSet SaveMode.Create
+            copyOrMove ctx name fromSet toSet SaveMode.Create
         | _ -> Error "Invalid arguments." |> Async.fromValue
 
 module Delete =
@@ -72,7 +72,7 @@ module Delete =
             }
         | _ -> Error "Invalid arguments." |> Async.fromValue
 
-module Rename =
+module Move =
     type Args =
         | [<AltCommandLine("-f")>] FromSet of string
         | [<AltCommandLine("-t")>] ToSet of string
@@ -93,20 +93,20 @@ module Rename =
 
         match fromSet, toSet, name with
         | Some fromSet, Some toSet, Some name ->
-            copyOrRename ctx name fromSet toSet SaveMode.Edit
+            copyOrMove ctx name fromSet toSet SaveMode.Edit
         | _ -> Error "Invalid arguments." |> Async.fromValue
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Copy of Copy.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Delete of Delete.Args ParseResults
-    | [<CliPrefix(CliPrefix.None)>] Rename of Rename.Args ParseResults
+    | [<CliPrefix(CliPrefix.None)>] Move of Move.Args ParseResults
 
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Copy _ -> "Copies a card."
             | Delete _ -> "Deletes a card."
-            | Rename _ -> "Renames a card."
+            | Move _ -> "Moves a card."
 
 let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
     match ctx, (results.GetAllResults().Head) with
@@ -114,4 +114,4 @@ let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
     | Workspace _, _ -> Error "This operation requires a logged in user." |> Async.fromValue
     | User ctx, Copy results -> Copy.getJob ctx results
     | User ctx, Delete results -> Delete.getJob ctx results
-    | User ctx, Rename results -> Rename.getJob ctx results
+    | User ctx, Move results -> Move.getJob ctx results

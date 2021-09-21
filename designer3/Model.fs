@@ -51,6 +51,13 @@ type CardDetails = {
     Rules4: string
     LoyaltyCost4: string
 }
+module CardDetails =
+    let toInfo (details: CardDetails) : CardInfo =
+        {
+            Id = details.Id
+            Name = details.Name
+            Set = details.Set
+        }
 
 /// <summary> Group used for assigning card numbers. </summary>
 type CollectorNumberGroup =
