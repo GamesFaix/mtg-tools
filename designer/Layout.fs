@@ -1,5 +1,6 @@
 ﻿module GamesFaix.MtgTools.Designer.Layout
 
+open System.Xml.Linq
 open Model
 open Workspace
 
@@ -7,33 +8,39 @@ open Workspace
 let private cardHeightInches = 3.46875
 let private cardWidthInches = 2.46875
 
-let private styleTag =
+let private style =
     [
-        "<style>"
-        "  body { margin: 0; }"
-        "  img {"
-        $"    height: {cardHeightInches}in;"
-        $"    width: {cardWidthInches}in;"
-        "    padding-right: 0.15625in;"
-        "    padding-bottom: 0.53125in;"
-        "  }"
-        "</style>"
+        "body { margin: 0; }"
+        "img {"
+        $"  height: {cardHeightInches}in;"
+        $"  width: {cardWidthInches}in;"
+        "  padding-right: 0.15625in;"
+        "  padding-bottom: 0.53125in;"
+        "}"
     ] |> String.concat "\n"
 
-let private getImageTag (card: CardInfo) : string =
+let private name = XName.Get
+
+let private getImageTag (card: CardInfo) =
     let file = SetDirectory.getCardFileName card.Name
-    $"<img src=\"{file}\"/>"
+    XElement(name "img",
+        XAttribute(name "src", file)
+    )
+
+let createDoc (cards: CardInfo list) =
+   XDocument(
+        XElement(name "html",
+            XElement(name "head",
+                XElement(name "style",
+                    style
+                )
+            ),
+            XElement(name "body",
+                cards |> List.map getImageTag
+            )
+        )
+    )
 
 let createHtmlLayout (cards: CardInfo list) : string =
-    let cardTags = cards |> List.map getImageTag
-
-    [
-        "<html>"
-        "<head>"
-        styleTag
-        "</head>"
-        "<body>"
-        cardTags |> String.concat ""
-        "</body>"
-        "</html>"
-    ] |> String.concat "\n"
+    let doc = createDoc cards
+    doc.ToString()
