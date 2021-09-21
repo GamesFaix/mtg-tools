@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\designer3\designer.fsproj" />
+    <ProjectReference Include="..\designer\designer.fsproj" />
   </ItemGroup>
 
 </Project>
