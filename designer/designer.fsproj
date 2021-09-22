@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <TargetName>mtgd</TargetName>
+    <RootNamespace>GamesFaix.MtgTools.Designer</RootNamespace>
+    <AssemblyName>mtgd</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Properties\launchSettings.json" />
+    <Compile Include="FileSystem.fs" />
+    <Compile Include="Workspace.fs" />
+    <Compile Include="Auth.fs" />
+    <Compile Include="Context.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="MtgDesign\Reader.fs" />
+    <Compile Include="MtgDesign\Writer.fs" />
+    <Compile Include="CardProcessor.fs" />
+    <Compile Include="Auditor.fs" />
+    <Compile Include="Layout.fs" />
+    <Compile Include="Cli\Types.fs" />
+    <Compile Include="Cli\Workspace.fs" />
+    <Compile Include="Cli\Login.fs" />
+    <Compile Include="Cli\Card.fs" />
+    <Compile Include="Cli\Set.fs" />
+    <Compile Include="Cli\Main.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup />
+
+  <ItemGroup>
+    <PackageReference Include="Argu" Version="6.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="93.0.4577.6300" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+    <PackageReference Include="SgmlReader.NetStandard" Version="1.8.14.1" />
+  </ItemGroup>
+
+</Project>

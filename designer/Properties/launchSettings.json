@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "designer": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}
