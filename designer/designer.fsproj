@@ -3,10 +3,13 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <TargetName>mtgd</TargetName>
     <RootNamespace>GamesFaix.MtgTools.Designer</RootNamespace>
+    <AssemblyName>mtgd</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Properties\launchSettings.json" />
     <Compile Include="FileSystem.fs" />
     <Compile Include="Workspace.fs" />
     <Compile Include="Auth.fs" />
@@ -26,9 +29,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Properties\launchSettings.json" />
-  </ItemGroup>
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Argu" Version="6.1.1" />

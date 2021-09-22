@@ -8,7 +8,7 @@ let main args =
         let! ctx = Context.loadContext ()
         ctx.Log.Information "mtg.design.cli"
 
-        let parser = ArgumentParser.Create<Cli.Main.Args>(programName = "designer")
+        let parser = ArgumentParser.Create<Cli.Main.Args>(programName = "mtgd")
 
         try
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
@@ -25,9 +25,11 @@ let main args =
                 ctx.Log.Error err
                 return -1
         with
-        | ex ->
-            ctx.Log.Error(ex, "An unexpected error occurred.")
+        | :? ArguParseException ->
             ctx.Log.Information (parser.PrintUsage())
             return -1
+        | ex ->
+            ctx.Log.Error(ex, "An unexpected error occurred.")
+            return -2
     }
     |> Async.RunSynchronously
