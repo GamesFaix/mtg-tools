@@ -64,7 +64,7 @@ let parse (command: string) =
 [<InlineData("workspace",
              "Workspace []")>]
 [<InlineData("workspace -d some-folder",
-             "Workspace [Dir (Some \"some-folder\")]")>]
+             "Workspace [Dir \"some-folder\"]")>]
 [<InlineData("login",
              "Login []")>]
 [<InlineData("login -e test@test.com -p abc123",
