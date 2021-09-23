@@ -5,20 +5,21 @@ open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Context
 open GamesFaix.MtgTools.Designer.Model
 
-type private SaveMode = MtgDesign.Writer.SaveMode
+type private SaveMode = MtgdWriter.SaveMode
 
-let private loadCards (ctx: UserContext) (set: string) = async {
-    let! cards = MtgDesign.Reader.getSetCardDetails ctx set
-    return! CardProcessor.processSet ctx set cards
-}
+let private loadCards (set: string) =
+    fun ctx -> async {
+        let! cards = MtgdReader.getSetCardDetails set ctx
+        return! CardProcessor.processSet set cards ctx
+    }
 
-let private copyOrRename (ctx: UserContext) (fromSet: string) (toSet: string) (mode: SaveMode) =
-    async {
+let private copyOrRename (fromSet: string) (toSet: string) (mode: SaveMode) =
+    fun ctx -> async {
         let action = if mode = SaveMode.Create then "Copying" else "Renaming"
         ctx.Log.Information $"{action} set {fromSet} to {toSet}..."
-        let! cards = loadCards ctx fromSet
+        let! cards = loadCards fromSet ctx
         let cards = cards |> List.map (fun c -> { c with Set = toSet })
-        do! MtgDesign.Writer.saveCards ctx mode cards
+        do! MtgdWriter.saveCards mode cards ctx
         ctx.Log.Information "Done."
         return Ok ()
     }
@@ -32,11 +33,11 @@ module Audit =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let set = results.GetResult Set
-        async {
+    let getJob (results: Args ParseResults) =
+        fun ctx -> async {
+            let set = results.GetResult Set
             ctx.Log.Information $"Auditing set {set}..."
-            let! cards = loadCards ctx set
+            let! cards = loadCards set ctx
             Auditor.findIssues cards
             |> Auditor.logIssues ctx.Log
             ctx.Log.Information "Done."
@@ -54,10 +55,10 @@ module Copy =
                 | From _ -> "The set abbreviation."
                 | To _ -> "The copy's set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
+    let getJob (results: Args ParseResults) =
         let fromSet = results.GetResult From
         let toSet = results.GetResult To
-        copyOrRename ctx fromSet toSet SaveMode.Create
+        copyOrRename fromSet toSet SaveMode.Create
 
 module Delete =
     type Args =
@@ -68,12 +69,12 @@ module Delete =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let set = results.GetResult Set
-        async {
+    let getJob (results: Args ParseResults) =
+        fun ctx -> async {
+            let set = results.GetResult Set
             ctx.Log.Information $"Deleting set {set}..."
-            let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
-            do! MtgDesign.Writer.deleteCards ctx cardInfos
+            let! cardInfos = MtgdReader.getSetCardInfos set ctx
+            do! MtgdWriter.deleteCards cardInfos ctx
             ctx.Log.Information "Done."
             return Ok ()
         }
@@ -87,11 +88,11 @@ module Layout =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let set = results.GetResult Set
-        async {
+    let getJob (results: Args ParseResults) =
+        fun ctx -> async {
+            let set = results.GetResult Set
             ctx.Log.Information $"Creating HTML layout for set {set}..."
-            let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
+            let! cardInfos = MtgdReader.getSetCardInfos set ctx
             let html = Layout.createHtmlLayout cardInfos
             do! FileSystem.saveFileText html (ctx.Workspace.Set(set).HtmlLayout)
             ctx.Log.Information "Done."
@@ -107,37 +108,38 @@ module Pull =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let set = results.GetResult Set
-        let setDir = ctx.Workspace.Set(set)
+    let getJob (results: Args ParseResults) =
+        fun ctx ->
+            let set = results.GetResult Set
+            let setDir = ctx.Workspace.Set(set)
 
-        let downloadImage (card: CardDetails) =
+            let downloadImage (card: CardDetails) =
+                async {
+                    ctx.Log.Information $"\tDownloading image for card {card.Name}..."
+                    let! bytes = MtgdReader.getCardImage (card |> CardDetails.toInfo)
+                    let path = setDir.CardImage(card.Name)
+                    return! FileSystem.saveFileBytes bytes path
+                }
+
             async {
-                ctx.Log.Information $"\tDownloading image for card {card.Name}..."
-                let! bytes = MtgDesign.Reader.getCardImage (card |> CardDetails.toInfo)
-                let path = setDir.CardImage(card.Name)
-                return! FileSystem.saveFileBytes bytes path
+                ctx.Log.Information $"Pulling latest for set {set}..."
+                let! details = MtgdReader.getSetCardDetails set ctx
+
+                ctx.Log.Information $"\tSaving data file..."
+                do! FileSystem.saveToJson details setDir.JsonDetails
+
+                // Clear old images
+                do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
+
+                // Download images
+                do! details
+                    |> List.map downloadImage
+                    |> Async.Parallel
+                    |> Async.Ignore
+
+                ctx.Log.Information "Done."
+                return Ok ()
             }
-
-        async {
-            ctx.Log.Information $"Pulling latest for set {set}..."
-            let! details = MtgDesign.Reader.getSetCardDetails ctx set
-
-            ctx.Log.Information $"\tSaving data file..."
-            do! FileSystem.saveToJson details setDir.JsonDetails
-
-            // Clear old images
-            do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
-
-            // Download images
-            do! details
-                |> List.map downloadImage
-                |> Async.Parallel
-                |> Async.Ignore
-
-            ctx.Log.Information "Done."
-            return Ok ()
-        }
 
 module Rename =
     type Args =
@@ -150,10 +152,10 @@ module Rename =
                 | From _ -> "The old set abbreviation."
                 | To _ -> "The new set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
+    let getJob (results: Args ParseResults) =
         let fromSet = results.GetResult From
         let toSet = results.GetResult To
-        copyOrRename ctx fromSet toSet SaveMode.Edit
+        copyOrRename fromSet toSet SaveMode.Edit
 
 module Scrub =
     type Args =
@@ -164,12 +166,12 @@ module Scrub =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let set = results.GetResult Set
-        async {
+    let getJob (results: Args ParseResults) =
+        fun ctx -> async {
+            let set = results.GetResult Set
             ctx.Log.Information $"Scrubbing set {set}..."
-            let! cards = loadCards ctx set
-            let! _ = MtgDesign.Writer.saveCards ctx SaveMode.Edit cards
+            let! cards = loadCards set ctx
+            let! _ = MtgdWriter.saveCards SaveMode.Edit cards ctx
             ctx.Log.Information "Done."
             return Ok ()
         }
@@ -194,16 +196,15 @@ type Args =
             | Rename _ -> "Renames a set."
             | Scrub _ -> "Downloads cards, processes them, then posts updates. Fixes things like collectors numbers."
 
-let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
-    match ctx with
+let getJob (results: Args ParseResults) = function
     | Empty _
     | Workspace _ -> Error "This operation requires a logged in user." |> async.Return
     | User ctx ->
         match results.GetAllResults().Head with
-        | Audit results -> Audit.getJob ctx results
-        | Copy results -> Copy.getJob ctx results
-        | Delete results -> Delete.getJob ctx results
-        | Layout results -> Layout.getJob ctx results
-        | Pull results -> Pull.getJob ctx results
-        | Rename results -> Rename.getJob ctx results
-        | Scrub results -> Scrub.getJob ctx results
+        | Audit results -> Audit.getJob results ctx
+        | Copy results -> Copy.getJob results ctx
+        | Delete results -> Delete.getJob results ctx
+        | Layout results -> Layout.getJob results ctx
+        | Pull results -> Pull.getJob results ctx
+        | Rename results -> Rename.getJob results ctx
+        | Scrub results -> Scrub.getJob results ctx

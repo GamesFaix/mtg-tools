@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Designer.MtgDesign.Writer
+﻿module GamesFaix.MtgTools.Designer.MtgdWriter
 
 open System
 open System.Net
@@ -52,8 +52,8 @@ let private buildRenderQuery (mode: SaveMode) (card: CardDetails) : string =
 
     query.ToString()
 
-let private renderCard (ctx: UserContext) (mode: SaveMode) (card: CardDetails) : unit Async =
-    async {
+let private renderCard (mode: SaveMode) (card: CardDetails) =
+    fun ctx -> async {
         let query = buildRenderQuery mode card
         let url =
             $"{baseUrl}/render?{query}"
@@ -73,8 +73,8 @@ let private renderCard (ctx: UserContext) (mode: SaveMode) (card: CardDetails) :
         return ()
     }
 
-let private shareCard (ctx: UserContext) (mode: SaveMode) (card: CardDetails) : unit Async =
-    async {
+let private shareCard (mode: SaveMode) (card: CardDetails) =
+    fun ctx -> async {
         let query = HttpUtility.ParseQueryString ""
         query.Add("edit", if mode = SaveMode.Create then "false" else card.Id)
         query.Add("name", card.Name)
@@ -93,26 +93,27 @@ let private shareCard (ctx: UserContext) (mode: SaveMode) (card: CardDetails) : 
         return ()
     }
 
-let saveCard (ctx: UserContext) (mode: SaveMode) (card: CardDetails) : unit Async =
-    async {
+let saveCard (mode: SaveMode) (card: CardDetails) =
+    fun ctx -> async {
         ctx.Log.Information $"\tRendering ({card.Number}/{card.Total}) {card.Name}..."
-        let! _ = renderCard ctx mode card
+        let! _ = renderCard mode card ctx
         ctx.Log.Information $"\tSharing ({card.Number}/{card.Total}) {card.Name}..."
-        let! _ = shareCard ctx mode card
+        let! _ = shareCard mode card ctx
         ctx.Log.Information $"\tFinished ({card.Number}/{card.Total}) {card.Name}."
         return ()
     }
 
-let saveCards (ctx: UserContext) (mode: SaveMode) (cards: CardDetails list) : unit Async =
-    ctx.Log.Information "Saving cards..."
-    cards
-    |> List.map (saveCard ctx mode)
-    |> Async.Sequential
-    |> Async.Ignore
+let saveCards (mode: SaveMode) (cards: CardDetails list) =
+    fun ctx ->
+        ctx.Log.Information "Saving cards..."
+        cards
+        |> List.map (fun c -> saveCard mode c ctx)
+        |> Async.Sequential
+        |> Async.Ignore
 
-let deleteCard (ctx: UserContext) (card: CardInfo) : unit Async =
+let deleteCard (card: CardInfo) =
     // Note: Cookie not really required. Security hole
-    async {
+    fun ctx -> async {
         ctx.Log.Information $"\tDeleting {card.Set} - {card.Name}..."
 
         let url = $"{baseUrl}/set/{card.Set}/i/{card.Id}/delete"
@@ -124,9 +125,10 @@ let deleteCard (ctx: UserContext) (card: CardInfo) : unit Async =
         return ()
     }
 
-let deleteCards (ctx: UserContext) (cards: CardInfo list) : unit Async =
-    ctx.Log.Information "Deleting cards..."
-    cards
-    |> List.map (deleteCard ctx)
-    |> Async.Parallel
-    |> Async.Ignore
+let deleteCards (cards: CardInfo list) =
+    fun ctx ->
+        ctx.Log.Information "Deleting cards..."
+        cards
+        |> List.map (fun c -> deleteCard c ctx)
+        |> Async.Parallel
+        |> Async.Ignore

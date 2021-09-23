@@ -15,8 +15,8 @@
     <Compile Include="Auth.fs" />
     <Compile Include="Context.fs" />
     <Compile Include="Model.fs" />
-    <Compile Include="MtgDesign\Reader.fs" />
-    <Compile Include="MtgDesign\Writer.fs" />
+    <Compile Include="MtgdReader.fs" />
+    <Compile Include="MtgdWriter.fs" />
     <Compile Include="CardProcessor.fs" />
     <Compile Include="Auditor.fs" />
     <Compile Include="Layout.fs" />
@@ -29,10 +29,9 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
     <PackageReference Include="Argu" Version="6.1.1" />
+    <PackageReference Include="FSharpx.Extras" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="93.0.4577.6300" />

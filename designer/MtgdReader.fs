@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Designer.MtgDesign.Reader
+﻿module GamesFaix.MtgTools.Designer.MtgdReader
 
 open System
 open System.IO
@@ -12,8 +12,8 @@ open GamesFaix.MtgTools.Designer.Model
 let private baseUrl = "https://mtg.design"
 let private client = new HttpClient()
 
-let private getXDoc (ctx: UserContext) (url: string) : XDocument Async =
-    async {
+let private getXDoc (url: string) =
+    fun ctx -> async {
         use request = new HttpRequestMessage ()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
@@ -73,12 +73,12 @@ let private getCardInfosFromSetPage (setName: string) (doc: XDocument) : CardInf
 
     cards
 
-let getSetCardInfos (ctx: UserContext) (setAbbrev: string) : CardInfo list Async =
-    async {
+let getSetCardInfos (setAbbrev: string) =
+    fun ctx -> async {
         ctx.Log.Information $"Loading list of cards in {setAbbrev}..."
 
         let url = $"{baseUrl}/set/{setAbbrev}"
-        let! page = getXDoc ctx url
+        let! page = getXDoc url ctx
         let cards = getCardInfosFromSetPage setAbbrev page
 
         ctx.Log.Information $"Found {cards.Length} cards."
@@ -146,26 +146,26 @@ let private getCardDetailsFromCardPage (doc: XDocument) : CardDetails =
     }
     card
 
-let getCardDetails (ctx: UserContext) (cardInfo: CardInfo) : CardDetails Async =
-    async {
+let getCardDetails (cardInfo: CardInfo) =
+    fun ctx -> async {
         ctx.Log.Information $"\tParsing details for {cardInfo.Name}..."
 
         let url = $"{baseUrl}/i/{cardInfo.Id}/edit"
-        let! page = getXDoc ctx url
+        let! page = getXDoc url ctx
         let cardDetails = getCardDetailsFromCardPage page
 
         ctx.Log.Information $"\tParsed {cardInfo.Name}."
         return { cardDetails with Id = cardInfo.Id }
     }
 
-let getSetCardDetails (ctx: UserContext) (setAbbrev: string) : CardDetails list Async =
-    async {
+let getSetCardDetails (setAbbrev: string) =
+    fun ctx -> async {
         ctx.Log.Information "Parsing card details..."
-        let! cardInfos = getSetCardInfos ctx setAbbrev
+        let! cardInfos = getSetCardInfos setAbbrev ctx
 
         let! cardDetails =
             cardInfos
-            |> List.map (getCardDetails ctx)
+            |> List.map (fun c -> getCardDetails c ctx)
             |> Async.Parallel
 
         ctx.Log.Information "Card details parsed."

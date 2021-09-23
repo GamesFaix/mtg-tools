@@ -14,7 +14,7 @@ let main args =
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
             ctx.Log.Debug (results.ToString())
 
-            let! job = Cli.Main.getJob ctx results
+            let! job = Cli.Main.getJob results ctx
 
             match job with
             | Ok () ->
