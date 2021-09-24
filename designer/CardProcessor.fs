@@ -99,22 +99,22 @@ let private processCardInner (cardsToCenter: string list) (card: CardDetails) : 
 
     card
 
-let private loadCardsToCenter (setAbbrev: string) =
-    fun ctx -> async {
+let private loadCardsToCenter (setAbbrev: string) ctx =
+    async {
         let path = ctx.Workspace.Set(setAbbrev).CenterFixes
         match! FileSystem.loadFromJson<string list> path with
         | Some cards -> return cards
         | None -> return []
     }
 
-let processCard (card: CardDetails) =
-    fun ctx -> async {
+let processCard (card: CardDetails) ctx =
+    async {
         let! cardsToCenter = loadCardsToCenter card.Set ctx
         return processCardInner cardsToCenter card
     }
 
-let processSet (setAbbrev: string) (cards: CardDetails list) =
-    fun ctx -> async {
+let processSet (setAbbrev: string) (cards: CardDetails list) ctx =
+    async {
         ctx.Log.Information "Processing cards..."
 
         let! cardsToCenter = loadCardsToCenter setAbbrev ctx

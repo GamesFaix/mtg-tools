@@ -146,8 +146,8 @@ let private getCardDetailsFromCardPage (doc: XDocument) : CardDetails =
     }
     card
 
-let getCardDetails (cardInfo: CardInfo) =
-    fun ctx -> async {
+let getCardDetails (cardInfo: CardInfo) ctx =
+    async {
         ctx.Log.Information $"\tParsing details for {cardInfo.Name}..."
 
         let url = $"{baseUrl}/i/{cardInfo.Id}/edit"
@@ -158,8 +158,8 @@ let getCardDetails (cardInfo: CardInfo) =
         return { cardDetails with Id = cardInfo.Id }
     }
 
-let getSetCardDetails (setAbbrev: string) =
-    fun ctx -> async {
+let getSetCardDetails (setAbbrev: string) ctx =
+    async {
         ctx.Log.Information "Parsing card details..."
         let! cardInfos = getSetCardInfos setAbbrev ctx
 

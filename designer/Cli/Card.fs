@@ -6,8 +6,8 @@ open GamesFaix.MtgTools.Designer.Context
 
 type private SaveMode = MtgdWriter.SaveMode
 
-let private copyOrMove (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) =
-    fun ctx -> async {
+let private copyOrMove (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) ctx =
+    async {
         let action = if mode = SaveMode.Create then "Copying" else "Moving"
         ctx.Log.Information $"{action} card {name} from {fromSet} to {toSet}..."
         let! cardInfos = MtgdReader.getSetCardInfos fromSet ctx
@@ -50,8 +50,8 @@ module Delete =
                 | Set _ -> "The card's set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (results: Args ParseResults) =
-        fun ctx -> async {
+    let getJob (results: Args ParseResults) ctx =
+        async {
             let set = results.GetResult Set
             let name = results.GetResult Name
             ctx.Log.Information $"Deleting card {set} - {name}..."

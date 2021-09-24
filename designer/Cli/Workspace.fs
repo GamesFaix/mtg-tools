@@ -3,7 +3,6 @@
 open Argu
 open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Context
-open FSharpx.Reader
 
 type Args =
     | [<AltCommandLine("-d")>] Dir of string
@@ -13,8 +12,8 @@ type Args =
             match this with
             | Dir _ -> "Directory to set as workspace."
 
-let getJob (results: Args ParseResults) : Reader<Context, JobResult> =
-    fun ctx -> async {
+let getJob (results: Args ParseResults) (ctx: Context) : JobResult =
+    async {
         let dir = results.TryGetResult Args.Dir
 
         match dir with

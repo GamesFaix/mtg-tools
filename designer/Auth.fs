@@ -79,8 +79,8 @@ module private Browser =
         if loaded then Ok ()
         else Error "Failed to load home page with cookie"
 
-let private ensureCredentials (credentials: Credentials option) =
-    fun workspace -> async {
+let private ensureCredentials (credentials: Credentials option) workspace =
+    async {
         match credentials with
         | Some creds -> return Ok creds
         | None ->
@@ -89,8 +89,8 @@ let private ensureCredentials (credentials: Credentials option) =
             | None -> return Error $"No saved credentials in workspace {workspace.Path}"
     }
 
-let login (credentials: Credentials option) (saveCredentials: bool) =
-    fun workspace -> async {
+let login (credentials: Credentials option) (saveCredentials: bool) workspace =
+    async {
         match! ensureCredentials credentials workspace with
         | Error err -> return Error err
         | Ok creds ->

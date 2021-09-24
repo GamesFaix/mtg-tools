@@ -13,8 +13,8 @@ let private loadCards (set: string) =
         return! CardProcessor.processSet set cards ctx
     }
 
-let private copyOrRename (fromSet: string) (toSet: string) (mode: SaveMode) =
-    fun ctx -> async {
+let private copyOrRename (fromSet: string) (toSet: string) (mode: SaveMode) ctx =
+    async {
         let action = if mode = SaveMode.Create then "Copying" else "Renaming"
         ctx.Log.Information $"{action} set {fromSet} to {toSet}..."
         let! cards = loadCards fromSet ctx
@@ -33,8 +33,8 @@ module Audit =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        fun ctx -> async {
+    let getJob (results: Args ParseResults) ctx =
+        async {
             let set = results.GetResult Set
             ctx.Log.Information $"Auditing set {set}..."
             let! cards = loadCards set ctx
@@ -69,8 +69,8 @@ module Delete =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        fun ctx -> async {
+    let getJob (results: Args ParseResults) ctx =
+        async {
             let set = results.GetResult Set
             ctx.Log.Information $"Deleting set {set}..."
             let! cardInfos = MtgdReader.getSetCardInfos set ctx
@@ -88,8 +88,8 @@ module Layout =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        fun ctx -> async {
+    let getJob (results: Args ParseResults) ctx =
+        async {
             let set = results.GetResult Set
             ctx.Log.Information $"Creating HTML layout for set {set}..."
             let! cardInfos = MtgdReader.getSetCardInfos set ctx
@@ -108,38 +108,37 @@ module Pull =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        fun ctx ->
-            let set = results.GetResult Set
-            let setDir = ctx.Workspace.Set(set)
+    let getJob (results: Args ParseResults) ctx =
+        let set = results.GetResult Set
+        let setDir = ctx.Workspace.Set(set)
 
-            let downloadImage (card: CardDetails) =
-                async {
-                    ctx.Log.Information $"\tDownloading image for card {card.Name}..."
-                    let! bytes = MtgdReader.getCardImage (card |> CardDetails.toInfo)
-                    let path = setDir.CardImage(card.Name)
-                    return! FileSystem.saveFileBytes bytes path
-                }
-
+        let downloadImage (card: CardDetails) =
             async {
-                ctx.Log.Information $"Pulling latest for set {set}..."
-                let! details = MtgdReader.getSetCardDetails set ctx
-
-                ctx.Log.Information $"\tSaving data file..."
-                do! FileSystem.saveToJson details setDir.JsonDetails
-
-                // Clear old images
-                do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
-
-                // Download images
-                do! details
-                    |> List.map downloadImage
-                    |> Async.Parallel
-                    |> Async.Ignore
-
-                ctx.Log.Information "Done."
-                return Ok ()
+                ctx.Log.Information $"\tDownloading image for card {card.Name}..."
+                let! bytes = MtgdReader.getCardImage (card |> CardDetails.toInfo)
+                let path = setDir.CardImage(card.Name)
+                return! FileSystem.saveFileBytes bytes path
             }
+
+        async {
+            ctx.Log.Information $"Pulling latest for set {set}..."
+            let! details = MtgdReader.getSetCardDetails set ctx
+
+            ctx.Log.Information $"\tSaving data file..."
+            do! FileSystem.saveToJson details setDir.JsonDetails
+
+            // Clear old images
+            do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
+
+            // Download images
+            do! details
+                |> List.map downloadImage
+                |> Async.Parallel
+                |> Async.Ignore
+
+            ctx.Log.Information "Done."
+            return Ok ()
+        }
 
 module Rename =
     type Args =
@@ -166,8 +165,8 @@ module Scrub =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        fun ctx -> async {
+    let getJob (results: Args ParseResults) ctx =
+        async {
             let set = results.GetResult Set
             ctx.Log.Information $"Scrubbing set {set}..."
             let! cards = loadCards set ctx
