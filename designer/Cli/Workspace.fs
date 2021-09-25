@@ -12,19 +12,20 @@ type Args =
             match this with
             | Dir _ -> "Directory to set as workspace."
 
-let getJob (ctx: Context) (results: Args ParseResults) : JobResult = async {
-    let dir = results.TryGetResult Args.Dir
+let getJob (results: Args ParseResults) (ctx: Context) : JobResult =
+    async {
+        let dir = results.TryGetResult Args.Dir
 
-    match dir with
-    | Some d ->
-        ctx.Log.Information $"Setting workspace to {d}..."
-        do! Context.setWorkspace d
-    | None ->
-        match! Context.getWorkspace () with
+        match dir with
         | Some d ->
-            ctx.Log.Information $"Workspace is currently set to {d}."
+            ctx.Log.Information $"Setting workspace to {d}..."
+            do! Context.setWorkspace d
         | None ->
-            ctx.Log.Information "Workspace not currently set."
+            match! Context.getWorkspace () with
+            | Some d ->
+                ctx.Log.Information $"Workspace is currently set to {d}."
+            | None ->
+                ctx.Log.Information "Workspace not currently set."
 
-    return Ok ()
-}
+        return Ok ()
+    }

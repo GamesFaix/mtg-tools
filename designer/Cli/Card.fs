@@ -4,18 +4,18 @@ open Argu
 open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Context
 
-type private SaveMode = MtgDesign.Writer.SaveMode
+type private SaveMode = MtgdWriter.SaveMode
 
-let private copyOrMove (ctx: UserContext) (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) =
+let private copyOrMove (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) ctx =
     async {
         let action = if mode = SaveMode.Create then "Copying" else "Moving"
         ctx.Log.Information $"{action} card {name} from {fromSet} to {toSet}..."
-        let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx fromSet
+        let! cardInfos = MtgdReader.getSetCardInfos fromSet ctx
         let card = cardInfos |> Seq.find (fun c -> c.Name = name)
-        let! details = MtgDesign.Reader.getCardDetails ctx card
-        let! details = CardProcessor.processCard ctx details
+        let! details = MtgdReader.getCardDetails card ctx
+        let! details = CardProcessor.processCard details ctx
         let details = { details with Set = toSet }
-        do! MtgDesign.Writer.saveCards ctx mode [details]
+        do! MtgdWriter.saveCards mode [details] ctx
         ctx.Log.Information "Done."
         return Ok ()
     }
@@ -33,11 +33,11 @@ module Copy =
                 | ToSet _ -> "The copy's set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
+    let getJob (results: Args ParseResults) =
         let fromSet = results.GetResult FromSet
         let toSet = results.GetResult ToSet
         let name = results.GetResult Name
-        copyOrMove ctx name fromSet toSet SaveMode.Create
+        copyOrMove name fromSet toSet SaveMode.Create
 
 module Delete =
     type Args =
@@ -50,14 +50,14 @@ module Delete =
                 | Set _ -> "The card's set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
-        let set = results.GetResult Set
-        let name = results.GetResult Name
+    let getJob (results: Args ParseResults) ctx =
         async {
+            let set = results.GetResult Set
+            let name = results.GetResult Name
             ctx.Log.Information $"Deleting card {set} - {name}..."
-            let! cardInfos = MtgDesign.Reader.getSetCardInfos ctx set
+            let! cardInfos = MtgdReader.getSetCardInfos set ctx
             let card = cardInfos |> Seq.find (fun c -> c.Name = name)
-            do! MtgDesign.Writer.deleteCard ctx card
+            do! MtgdWriter.deleteCard card ctx
             ctx.Log.Information "Done."
             return Ok ()
         }
@@ -75,11 +75,11 @@ module Move =
                 | ToSet _ -> "The card's new set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (ctx: UserContext) (results: Args ParseResults) : JobResult =
+    let getJob (results: Args ParseResults) =
         let fromSet = results.GetResult FromSet
         let toSet = results.GetResult ToSet
         let name = results.GetResult Name
-        copyOrMove ctx name fromSet toSet SaveMode.Edit
+        copyOrMove name fromSet toSet SaveMode.Edit
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Copy of Copy.Args ParseResults
@@ -93,10 +93,11 @@ type Args =
             | Delete _ -> "Deletes a card."
             | Move _ -> "Moves a card."
 
-let getJob (ctx: Context) (results: Args ParseResults) : JobResult =
-    match ctx, (results.GetAllResults().Head) with
-    | Empty _, _
-    | Workspace _, _ -> Error "This operation requires a logged in user." |> async.Return
-    | User ctx, Copy results -> Copy.getJob ctx results
-    | User ctx, Delete results -> Delete.getJob ctx results
-    | User ctx, Move results -> Move.getJob ctx results
+let getJob (results: Args ParseResults) =
+    fun ctx ->
+        match ctx, (results.GetAllResults().Head) with
+        | Empty _, _
+        | Workspace _, _ -> Error "This operation requires a logged in user." |> async.Return
+        | User ctx, Copy results -> Copy.getJob results ctx
+        | User ctx, Delete results -> Delete.getJob results ctx
+        | User ctx, Move results -> Move.getJob results ctx

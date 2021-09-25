@@ -16,19 +16,19 @@ type Args =
             | Pass _ -> "Password to use. If blank, tries to use saved credentials."
             | SaveCreds _ -> "If true, saves credentials to disc. Defaults to false."
 
-let getJob (context: Context) (results: Args ParseResults) : JobResult =
+let getJob (results: Args ParseResults) =
     let email = results.GetResult Email
     let pass = results.GetResult Pass
     let saveCreds = results.GetResult SaveCreds |> Option.defaultValue false
 
-    let login workspace =
+    let login =
         let creds : Auth.Credentials option =
             match email, pass with
             | Some e, Some p -> Some { Email = e; Password = p }
             | _ -> None
-        Auth.login workspace creds saveCreds
+        Auth.login creds saveCreds
 
-    match context with
+    function
     | Context.Empty _ ->
         Error "No workspace directory is set. Please set one before logging in." |> async.Return
     | Context.Workspace ctx -> login ctx.Workspace

@@ -73,7 +73,7 @@ let loadContext () : Context Async = async {
         return Context.Empty { Log = logger }
     | Some dir ->
         let workspace = Workspace.WorkspaceDirectory.create dir
-        match! Auth.getCookie workspace with
+        match! Auth.loadCookieFile workspace with
         | None ->
             return Context.Workspace {
                 Log = logger

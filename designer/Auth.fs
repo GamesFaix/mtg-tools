@@ -29,7 +29,7 @@ let private loadCredentialsFile (workspace: Workspace.WorkspaceDirectory) =
 let private saveCookieFile (cookie: Cookie) (workspace: Workspace.WorkspaceDirectory) =
     FileSystem.saveToJson cookie workspace.Cookie
 
-let private loadCookieFile (workspace: Workspace.WorkspaceDirectory) =
+let loadCookieFile (workspace: Workspace.WorkspaceDirectory) =
     FileSystem.loadFromJson<Cookie> workspace.Cookie
 
 module private Browser =
@@ -79,27 +79,26 @@ module private Browser =
         if loaded then Ok ()
         else Error "Failed to load home page with cookie"
 
-let private ensureCredentials (workspace: Workspace.WorkspaceDirectory) (credentials: Credentials option) = async {
-    match credentials with
-    | Some creds -> return Ok creds
-    | None ->
-        match! loadCredentialsFile workspace with
+let private ensureCredentials (credentials: Credentials option) workspace =
+    async {
+        match credentials with
         | Some creds -> return Ok creds
-        | None -> return Error $"No saved credentials in workspace {workspace.Path}"
-}
+        | None ->
+            match! loadCredentialsFile workspace with
+            | Some creds -> return Ok creds
+            | None -> return Error $"No saved credentials in workspace {workspace.Path}"
+    }
 
-let login (workspace: Workspace.WorkspaceDirectory) (credentials: Credentials option) (saveCredentials: bool) : Async<Result<unit, string>> = async {
-    match! ensureCredentials workspace credentials with
-    | Error err -> return Error err
-    | Ok creds ->
-        match Browser.login creds with
+let login (credentials: Credentials option) (saveCredentials: bool) workspace =
+    async {
+        match! ensureCredentials credentials workspace with
         | Error err -> return Error err
-        | Ok cookie ->
-            if saveCredentials && credentials.IsSome then
-                do! saveCredentialsFile creds workspace
-            do! saveCookieFile cookie workspace
-            return Ok ()
-}
-
-let getCookie (workspace: Workspace.WorkspaceDirectory) =
-    loadCookieFile workspace
+        | Ok creds ->
+            match Browser.login creds with
+            | Error err -> return Error err
+            | Ok cookie ->
+                if saveCredentials && credentials.IsSome then
+                    do! saveCredentialsFile creds workspace
+                do! saveCookieFile cookie workspace
+                return Ok ()
+    }
