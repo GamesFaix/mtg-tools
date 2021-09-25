@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\dck2cod\dck2cod.fsproj" />
+    <ProjectReference Include="..\cockatrize\cockatrize.fsproj" />
   </ItemGroup>
 
 </Project>
