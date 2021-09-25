@@ -12,8 +12,8 @@ open GamesFaix.MtgTools.Designer.Model
 let private baseUrl = "https://mtg.design"
 let private client = new HttpClient()
 
-let private getXDoc (url: string) =
-    fun ctx -> async {
+let private getXDoc (url: string) ctx =
+    async {
         use request = new HttpRequestMessage ()
         request.RequestUri <- Uri url
         request.Method <- HttpMethod.Get
@@ -73,8 +73,8 @@ let private getCardInfosFromSetPage (setName: string) (doc: XDocument) : CardInf
 
     cards
 
-let getSetCardInfos (setAbbrev: string) =
-    fun ctx -> async {
+let getSetCardInfos (setAbbrev: string) ctx =
+    async {
         ctx.Log.Information $"Loading list of cards in {setAbbrev}..."
 
         let url = $"{baseUrl}/set/{setAbbrev}"

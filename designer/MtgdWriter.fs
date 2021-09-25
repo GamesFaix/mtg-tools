@@ -93,7 +93,7 @@ let private shareCard (mode: SaveMode) (card: CardDetails) ctx =
         return ()
     }
 
-let saveCard (mode: SaveMode) (card: CardDetails) ctx=
+let saveCard (mode: SaveMode) (card: CardDetails) ctx =
     async {
         ctx.Log.Information $"\tRendering ({card.Number}/{card.Total}) {card.Name}..."
         let! _ = renderCard mode card ctx

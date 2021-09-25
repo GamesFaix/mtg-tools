@@ -7,8 +7,8 @@ open GamesFaix.MtgTools.Designer.Model
 
 type private SaveMode = MtgdWriter.SaveMode
 
-let private loadCards (set: string) =
-    fun ctx -> async {
+let private loadCards (set: string) ctx =
+    async {
         let! cards = MtgdReader.getSetCardDetails set ctx
         return! CardProcessor.processSet set cards ctx
     }
