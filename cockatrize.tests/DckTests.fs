@@ -1,7 +1,7 @@
-module GamesFaix.MtgTools.Dck2Cod.Tests.DckTests
+module GamesFaix.MtgTools.Cockatrize.Tests.DckTests
 
 open Xunit
-open GamesFaix.MtgTools.Dck2Cod
+open GamesFaix.MtgTools.Cockatrize
 
 [<Fact>]
 let ``Line.tryParseTitle should work`` () =

@@ -7,7 +7,7 @@
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
-    <RootNamespace>GamesFaix.MtgTools.Dck2Cod</RootNamespace>
+    <RootNamespace>GamesFaix.MtgTools.Cockatrize</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

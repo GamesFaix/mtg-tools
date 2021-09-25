@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.FileSystem
+﻿module GamesFaix.MtgTools.Cockatrize.FileSystem
 
 open System.IO
 open System.Xml.Linq

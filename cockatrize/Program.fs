@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Program
+﻿module GamesFaix.MtgTools.Cockatrize.Program
 
 open System
 open System.IO

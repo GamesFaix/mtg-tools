@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Dck
+﻿module GamesFaix.MtgTools.Cockatrize.Dck
 
 open System
 open System.Text.RegularExpressions
