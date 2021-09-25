@@ -1,7 +1,7 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Validator
+﻿module GamesFaix.MtgTools.Cockatrize.Validator
 
 open System
-open GamesFaix.MtgTools.Dck2Cod.Model
+open GamesFaix.MtgTools.Cockatrize.Model
 
 let private toListString (grp: (string * DeckItem list) list) : string =
     grp

@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Model
+﻿module GamesFaix.MtgTools.Cockatrize.Model
 
 open System
 open System.Linq

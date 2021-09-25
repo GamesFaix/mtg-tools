@@ -1,7 +1,7 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Cod
+﻿module GamesFaix.MtgTools.Cockatrize.Cod
 
 open System.Xml.Linq
-open GamesFaix.MtgTools.Dck2Cod.Model
+open GamesFaix.MtgTools.Cockatrize.Model
 
 let private name = XName.Get
 

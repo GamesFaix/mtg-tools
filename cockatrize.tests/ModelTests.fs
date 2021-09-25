@@ -1,7 +1,7 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Tests.ModelTests
+﻿module GamesFaix.MtgTools.Cockatrize.Tests.ModelTests
 
 open Xunit
-open GamesFaix.MtgTools.Dck2Cod
+open GamesFaix.MtgTools.Cockatrize
 
 module DeckTests =
 

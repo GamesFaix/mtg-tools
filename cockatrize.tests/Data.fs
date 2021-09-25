@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Dck2Cod.Tests.Data
+﻿module GamesFaix.MtgTools.Cockatrize.Tests.Data
 
 open System.IO
 

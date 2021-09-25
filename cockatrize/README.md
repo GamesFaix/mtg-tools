@@ -1,4 +1,4 @@
-# dck2cod
+# cockatrize
 
 Converts decks saved in Shandalar's proprietary `.dck` format to Cockatrice's `.cod` format.
 
@@ -38,7 +38,7 @@ Lord of Fate (Bl/Wh, 4th Edition)
 .930	3	Brass Man
 ```
 
-`dck2cod` can convert it to this
+`cockatrize` can convert it to this
 
 ```
 <?xml version="1.0" encoding="utf-8"?>
