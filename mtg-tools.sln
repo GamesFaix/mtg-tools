@@ -9,9 +9,11 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "cockatrize", "cockatrize\co
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "cockatrize.tests", "cockatrize.tests\cockatrize.tests.fsproj", "{E71CCB27-B4B1-4DCD-9EA6-5B96D9179C1F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "designer", "designer\designer.fsproj", "{615A8A52-6052-4144-89BC-A81DEEC1510D}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "designer", "designer\designer.fsproj", "{615A8A52-6052-4144-89BC-A81DEEC1510D}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "designer.tests", "designer.tests\designer.tests.fsproj", "{8D4D13AB-00D7-4C9C-89B6-AD1EADD1552A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "designer.tests", "designer.tests\designer.tests.fsproj", "{8D4D13AB-00D7-4C9C-89B6-AD1EADD1552A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "archivist", "archivist\archivist.fsproj", "{D92F9131-1096-44BB-A703-4EB914FA0E16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{8D4D13AB-00D7-4C9C-89B6-AD1EADD1552A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D4D13AB-00D7-4C9C-89B6-AD1EADD1552A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D4D13AB-00D7-4C9C-89B6-AD1EADD1552A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D92F9131-1096-44BB-A703-4EB914FA0E16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D92F9131-1096-44BB-A703-4EB914FA0E16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D92F9131-1096-44BB-A703-4EB914FA0E16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D92F9131-1096-44BB-A703-4EB914FA0E16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

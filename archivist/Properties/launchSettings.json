@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "archivist": {
+      "commandName": "Project",
+      "commandLineArgs": "echo \"ach hans run\""
+    }
+  }
+}
