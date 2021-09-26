@@ -3,7 +3,7 @@
 open System
 
 // DragonShield exports don't have headers, so the property order matters
-type DragonShieldCard = {
+type DragonShieldCsvCard = {
     Count : int
     Name : string
     Set : string
@@ -14,6 +14,14 @@ type DragonShieldCard = {
     Date : DateTime
 }
 
+type InventoryCsvCard = {
+    Count : int
+    Name : string
+    Set : string
+    Version : string
+    Language : string
+}
+
 type Card = {
     Name : string
     Set : string
@@ -22,6 +30,26 @@ type Card = {
 }
 
 type CardCount = int * Card
+
+module Card =
+    
+    let fromDragonShieldCsv (c: DragonShieldCsvCard) : CardCount =
+        c.Count,
+        {
+            Name = c.Name.Trim()
+            Set = c.Set.Trim()
+            Version = c.Version.Trim()
+            Language = c.Language.Trim()
+        }
+    
+    let toInventoryCsv ((ct, c): CardCount) : InventoryCsvCard =
+        {
+            Count = ct
+            Name = c.Name
+            Set = c.Set
+            Version = c.Version
+            Language = c.Language
+        }
 
 type TransactionInfo = {
     Title : string

@@ -23,10 +23,9 @@ let private collectAsync<'a, 'b> (projection: 'a -> 'b list Async) (source: 'a l
 
 let loadTransactionDetails (dir: Workspace.TransactionDirectory) (log: ILogger) : Result<TransactionDetails, string> Async =
     async {
-        log.Information $"Loading transaction {dir.Path}..."
         let! maybeManifest = FileSystem.loadFromJson<TransactionManifest> dir.Manifest
         match maybeManifest with
-        | None -> return Error "Transaction manifest not found."
+        | None -> return Error "\tTransaction manifest not found."
         | Some manifest ->
             let! add = 
                 manifest.AddFiles 
@@ -38,7 +37,7 @@ let loadTransactionDetails (dir: Workspace.TransactionDirectory) (log: ILogger) 
                 |> Option.defaultValue []
                 |> collectAsync (fun f -> loadCardFile f dir log)
 
-            log.Information $"Adding {add.Length} and subtracting {subtract.Length} cards."
+            log.Information $"\tAdding {add.Length} and subtracting {subtract.Length} cards."
             return Ok {
                 Info = manifest.Info
                 Add = add

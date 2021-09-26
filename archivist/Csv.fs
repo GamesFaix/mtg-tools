@@ -1,32 +1,16 @@
 ﻿module GamesFaix.MtgTools.Archivist.Csv
 
-open System
 open System.Globalization
 open System.IO
 open CsvHelper
 open CsvHelper.Configuration
 open Model
 
-let private toDomain (c: DragonShieldCard) : CardCount =
-    c.Count,
-    {
-        Name = c.Name
-        Set = c.Set
-        Version = c.Version
-        Language = c.Language
-    }
-
-let private toDragonShield ((ct, c): CardCount) : DragonShieldCard =
-    {
-        Count = ct
-        Name = c.Name
-        Set = c.Set
-        Version = c.Version
-        Language = c.Language
-        Price = 0.0m
-        Date = DateTime.MinValue
-        Condition = ""
-    }
+(* 
+    Note: DragonShield does not output properly formatted CSV files. 
+      * It uses ', ' as a delimiter, so strings must be trimmed.
+      * Strings are not quoted, so card names with commas screw up the columns.
+ *)
 
 let loadCardFile (path: string) : CardCount list Async =
     async {
@@ -35,11 +19,12 @@ let loadCardFile (path: string) : CardCount list Async =
         
         use reader = File.OpenText path :> TextReader
         use csv = new CsvReader(reader, config)
+
         csv.Read() |> ignore
 
         let cards =
-            csv.GetRecords<DragonShieldCard>()
-            |> Seq.map toDomain
+            csv.GetRecords<DragonShieldCsvCard>()
+            |> Seq.map Card.fromDragonShieldCsv // Trims strings
             |> Seq.toList
 
         return cards
@@ -50,7 +35,7 @@ let saveCardFile (path: string) (cards: CardCount list) : unit Async =
         let config = CsvConfiguration(CultureInfo.InvariantCulture)
         config.HasHeaderRecord <- false
 
-        let cards = cards |> Seq.map toDragonShield
+        let cards = cards |> Seq.map Card.toInventoryCsv
         
         use writer = new StreamWriter(path)
         use csv = new CsvWriter(writer, config)

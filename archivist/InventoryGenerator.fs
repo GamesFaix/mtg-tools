@@ -22,13 +22,19 @@ let private apply (inv: Inventory) (tran: TransactionDetails) : Inventory =
 let private loadAndApply (inv: Inventory) (transactionName: string) (ctx: WorkspaceContext) : Result<Inventory, string> Async =
     async {
         let dir = ctx.Workspace.Transactions.GetTransactionDirectory transactionName
+        ctx.Log.Information $"Loading transaction {transactionName}..."
         let! result = TransactionLoader.loadTransactionDetails dir ctx.Log
-        return result |> Result.map (apply inv)
+        let result = result |> Result.map (apply inv)
+        match result with
+        | Ok inv -> ctx.Log.Information $"{inv.Cards.Length} cards in inventory."
+        | _ -> ()
+        return result
     }
 
 let private computeInventory (ctx: WorkspaceContext) : Result<Inventory, string> Async =
     async {
         let dir = ctx.Workspace.Transactions
+        ctx.Log.Information "Starting with empty inventory..."
         let mutable result = Ok Inventory.empty
         for t in dir.GetTransactionDirectories() do
             match result with
