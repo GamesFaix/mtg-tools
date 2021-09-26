@@ -10,7 +10,9 @@
     <Compile Include="FileSystem.fs" />
     <Compile Include="Workspace.fs" />
     <Compile Include="Context.fs" />
+    <Compile Include="Model.fs" />
     <Compile Include="TransactionLoader.fs" />
+    <Compile Include="TransactionSummer.fs" />
     <Compile Include="Cli.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

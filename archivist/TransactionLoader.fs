@@ -1,48 +1,25 @@
 ﻿module GamesFaix.MtgTools.Archivist.TransactionLoader
 
-open System
 open System.Globalization
 open System.IO
 open CsvHelper
 open CsvHelper.Configuration
 open Serilog
+open Model
 
-// DragonShield exports don't have headers, so the property order matters
-type DragonShieldCard = {
-    Count : int
-    Name : string
-    Set : string
-    Condition : string
-    Price : decimal
-    Version : string
-    Language : string
-    Date : DateTime
-}
+let private loadManifest (dir: Workspace.TransactionDirectory) : TransactionManifest option Async =
+    FileSystem.loadFromJson<TransactionManifest> dir.Manifest
 
-// Structure of manifest.json file
-type TransactionInfo = {
-    Title : string
-    Date : DateTime
-    Price : decimal option
-    Notes : string option
-    AddFiles : string list
-    SubtractFiles : string list
-}
+let private mapCard (c: DragonShieldCard) : CardCount =
+    c.Count,
+    {
+        Name = c.Name
+        Set = c.Set
+        Version = c.Version
+        Language = c.Language
+    }
 
-// Hydrated manifest file
-type TransactionDetails = {
-    Title : string
-    Date : DateTime
-    Price : decimal option
-    Notes : string option
-    Add : DragonShieldCard list
-    Subtract : DragonShieldCard list
-}
-
-let private loadTransactionInfo (dir: Workspace.TransactionDirectory) : TransactionInfo option Async =
-    FileSystem.loadFromJson<TransactionInfo> dir.Manifest
-
-let private loadCardFile (name: string) (dir: Workspace.TransactionDirectory) (log: ILogger): DragonShieldCard list Async =
+let private loadCardFile (name: string) (dir: Workspace.TransactionDirectory) (log: ILogger): CardCount list Async =
     async {
         let path = dir.GetCardFile name
         log.Information $"\tLoading cards from {path}..."
@@ -55,7 +32,10 @@ let private loadCardFile (name: string) (dir: Workspace.TransactionDirectory) (l
         use csv = new CsvReader(reader, config)
         csv.Read() |> ignore
 
-        let cards = csv.GetRecords<DragonShieldCard>() |> Seq.toList
+        let cards =
+            csv.GetRecords<DragonShieldCard>()
+            |> Seq.map mapCard
+            |> Seq.toList
 
         log.Information $"\tFound {cards.Length} cards."
         return cards
@@ -73,17 +53,14 @@ let private collectAsync<'a, 'b> (projection: 'a -> 'b list Async) (source: 'a l
 let loadTransactionDetails (dir: Workspace.TransactionDirectory) (log: ILogger) : Result<TransactionDetails, string> Async =
     async {
         log.Information $"Loading transaction {dir.Path}..."
-        match! loadTransactionInfo dir with
+        match! loadManifest dir with
         | None -> return Error "Transaction manifest not found."
-        | Some info ->
-            let! add = info.AddFiles |> collectAsync (fun f -> loadCardFile f dir log)
-            let! subtract = info.SubtractFiles |> collectAsync (fun f -> loadCardFile f dir log)
+        | Some manifest ->
+            let! add = manifest.AddFiles |> collectAsync (fun f -> loadCardFile f dir log)
+            let! subtract = manifest.SubtractFiles |> collectAsync (fun f -> loadCardFile f dir log)
             log.Information $"Adding {add.Length} and subtracting {subtract.Length} cards."
             return Ok {
-                Title = info.Title
-                Date = info.Date
-                Price = info.Price
-                Notes = info.Notes
+                Info = manifest.Info
                 Add = add
                 Subtract = subtract
             }
