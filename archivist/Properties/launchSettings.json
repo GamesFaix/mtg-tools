@@ -2,7 +2,7 @@
   "profiles": {
     "archivist": {
       "commandName": "Project",
-      "commandLineArgs": "refreshdb"
+      "commandLineArgs": "workspace -d %USERPROFILE%/documents/archivist"
     }
   }
 }

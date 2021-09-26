@@ -60,3 +60,5 @@ module Inventory =
         {
             Transactions = inv.Transactions
         }
+
+type JobResult = Async<Result<unit, string>>

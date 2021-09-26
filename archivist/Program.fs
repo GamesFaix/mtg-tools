@@ -8,13 +8,13 @@ let main args =
         let! ctx = Context.loadContext ()
         ctx.Log.Information "archivist"
 
-        let parser = ArgumentParser.Create<Cli.Args>(programName = "archivist")
+        let parser = ArgumentParser.Create<Cli.Main.Args>(programName = "archivist")
 
         try
             let results = parser.Parse(inputs = args, raiseOnUsage = true)
             ctx.Log.Debug (results.ToString())
 
-            let! job = Cli.getJob results ctx
+            let! job = Cli.Main.getJob results ctx
 
             match job with
             | Ok () ->

@@ -1,21 +1,4 @@
-﻿module GamesFaix.MtgTools.Archivist.Cli
-
-open Argu
-open GamesFaix.MtgTools.Archivist.Context
-open System.Net.Http
-open FSharp.Data
-
-type JobResult = Async<Result<unit, string>>
-
-//type Args =
-//    | [<CliPrefix(CliPrefix.None)>] Echo of string
-//    | [<CliPrefix(CliPrefix.None)>] RefreshDb
-
-//    interface IArgParserTemplate with
-//        member this.Usage =
-//            match this with
-//            | Echo _ -> "Prints the input string"
-//            | RefreshDb -> "Downloads card data from Scryfall."
+﻿module GamesFaix.MtgTools.Archivist.Cli.RefreshDb
 
 //let downloadScryfallData (ctx: Context) : JobResult =
 //    async {
@@ -62,13 +45,3 @@ type JobResult = Async<Result<unit, string>>
 //    }
 
 //type X = JsonProvider<"./bin/Debug/net5.0/scryfall-data.json">
-
-//let getJob (results: Args ParseResults) (ctx: Context) : JobResult =
-//    async {
-//        match results.GetAllResults().Head with
-//        | Echo str ->
-//            ctx.Log.Information str
-//            return Ok ()
-//        | RefreshDb ->
-//            return! downloadScryfallData ctx
-//    }

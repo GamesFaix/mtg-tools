@@ -14,7 +14,9 @@
     <Compile Include="Csv.fs" />
     <Compile Include="TransactionLoader.fs" />
     <Compile Include="InventoryGenerator.fs" />
-    <Compile Include="Cli.fs" />
+    <Compile Include="Cli\Workspace.fs" />
+    <Compile Include="Cli\RefreshDb.fs" />
+    <Compile Include="Cli\Main.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
