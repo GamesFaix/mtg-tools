@@ -1,7 +1,6 @@
 ﻿module GamesFaix.MtgTools.Archivist.FileSystem
 
 open System.IO
-open Newtonsoft.Json
 
 let createDirectoryIfMissing (path: string) : unit =
     if Directory.Exists path then ()
@@ -24,7 +23,7 @@ let loadFromJson<'a> (path: string) : 'a option Async =
     async {
         try
             let! json = File.ReadAllTextAsync path |> Async.AwaitTask
-            let result = JsonConvert.DeserializeObject<'a> json
+            let result = Json.deserialize json
             return Some result
         with
         | _ ->
@@ -32,9 +31,7 @@ let loadFromJson<'a> (path: string) : 'a option Async =
     }
 
 let saveToJson<'a> (data: 'a) (path: string) : unit Async =
-    let options = JsonSerializerSettings()
-    options.Formatting <- Formatting.Indented
-    let json = JsonConvert.SerializeObject(data, options)
+    let json = Json.serialize data
     saveFileText json path
 
 let deleteFilesInFolderMatching (dir: string) (filter : string -> bool) = async {

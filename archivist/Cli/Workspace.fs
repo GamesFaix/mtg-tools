@@ -21,6 +21,10 @@ let getJob (results: Args ParseResults) (ctx: Context) : JobResult =
         | Some d ->
             ctx.Log.Information $"Setting workspace to {d}..."
             do! Context.setWorkspace d
+            let workspace = Workspace.WorkspaceDirectory.create d
+            FileSystem.createDirectoryIfMissing workspace.Inventory.Path
+            FileSystem.createDirectoryIfMissing workspace.Transactions.Path
+
         | None ->
             match! Context.getWorkspace () with
             | Some d ->

@@ -28,8 +28,16 @@ let loadTransactionDetails (dir: Workspace.TransactionDirectory) (log: ILogger) 
         match maybeManifest with
         | None -> return Error "Transaction manifest not found."
         | Some manifest ->
-            let! add = manifest.AddFiles |> collectAsync (fun f -> loadCardFile f dir log)
-            let! subtract = manifest.SubtractFiles |> collectAsync (fun f -> loadCardFile f dir log)
+            let! add = 
+                manifest.AddFiles 
+                |> Option.defaultValue [] 
+                |> collectAsync (fun f -> loadCardFile f dir log)
+
+            let! subtract =
+                manifest.SubtractFiles 
+                |> Option.defaultValue []
+                |> collectAsync (fun f -> loadCardFile f dir log)
+
             log.Information $"Adding {add.Length} and subtracting {subtract.Length} cards."
             return Ok {
                 Info = manifest.Info

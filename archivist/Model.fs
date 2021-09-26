@@ -33,8 +33,8 @@ type TransactionInfo = {
 // Structure of manifest.json file
 type TransactionManifest = {
     Info : TransactionInfo
-    AddFiles : string list
-    SubtractFiles : string list
+    AddFiles : string list option
+    SubtractFiles : string list option
 }
 
 // Hydrated manifest file
