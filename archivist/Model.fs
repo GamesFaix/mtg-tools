@@ -48,5 +48,15 @@ type Inventory = {
     Transactions : TransactionInfo list
     Cards : CardCount list
 }
+
+type InventoryManifest = {
+    Transactions : TransactionInfo list
+}
+
 module Inventory =
     let empty = { Transactions = []; Cards = [] }
+
+    let manifest (inv: Inventory) : InventoryManifest =
+        {
+            Transactions = inv.Transactions
+        }

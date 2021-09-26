@@ -3,13 +3,28 @@
 open System.IO
 open System
 
+type InventoryVersionDirectory = {
+    Manifest : string
+    Cards : string
+}
+module InventoryVersionDirectory =
+    let create (rootDir: string) (name: string) =
+        let path = Path.Combine(rootDir, name)
+        {
+            Manifest = Path.Combine(path, "manifest.json")
+            Cards = Path.Combine(path, "cards.csv")
+        }
+
 type InventoryDirectory = {
     Path : string
+    Current : InventoryVersionDirectory
 }
 module InventoryDirectory =
     let create (rootDir: string) : InventoryDirectory =
+        let path = Path.Combine(rootDir, "inventory")
         {
-            Path = Path.Combine(rootDir, "inventory")
+            Path = path
+            Current = InventoryVersionDirectory.create path "current"
         }
 
 type TransactionDirectory = {

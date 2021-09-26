@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Archivist.TransactionSummer
+﻿module GamesFaix.MtgTools.Archivist.InventoryGenerator
 
 open Model
 open Context
@@ -26,7 +26,7 @@ let private loadAndApply (inv: Inventory) (transactionName: string) (ctx: Worksp
         return result |> Result.map (apply inv)
     }
 
-let generateInventory (ctx: WorkspaceContext) : Result<Inventory, string> Async =
+let private computeInventory (ctx: WorkspaceContext) : Result<Inventory, string> Async =
     async {
         let dir = ctx.Workspace.Transactions
         let mutable result = Ok Inventory.empty
@@ -38,4 +38,23 @@ let generateInventory (ctx: WorkspaceContext) : Result<Inventory, string> Async 
             | _ -> ()
 
         return result
+    }
+
+let private saveManifest (inv: Inventory) (ctx: WorkspaceContext) : unit Async =
+    let manifest = Inventory.manifest inv
+    let path = ctx.Workspace.Inventory.Current.Manifest
+    FileSystem.saveToJson manifest path
+
+let private saveCards (inv: Inventory) (ctx: WorkspaceContext) : unit Async =
+    let path = ctx.Workspace.Inventory.Current.Cards
+    Csv.saveCardFile path inv.Cards
+
+let generate (ctx: WorkspaceContext) : Result<unit, string> Async =
+    async {
+        match! computeInventory ctx with
+        | Ok inv ->
+            do! saveManifest inv ctx
+            do! saveCards inv ctx
+            return Ok ()
+        | Error err -> return Error err
     }
