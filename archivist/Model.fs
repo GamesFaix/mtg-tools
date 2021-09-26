@@ -48,3 +48,5 @@ type Inventory = {
     Transactions : TransactionInfo list
     Cards : CardCount list
 }
+module Inventory =
+    let empty = { Transactions = []; Cards = [] }
