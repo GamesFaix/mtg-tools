@@ -1,18 +1,17 @@
 ﻿module GamesFaix.MtgTools.Archivist.TransactionLoader
 
+open System
+open System.IO
+open System.Text.RegularExpressions
 open Serilog
 open Model
-open System.Text.RegularExpressions
-open System.IO
-open System
-open System.Linq
 
 let private loadCardFile (name: string) (dir: Workspace.TransactionDirectory) (log: ILogger): CardCount list Async =
     async {
         let path = dir.GetCardFile name
         log.Information $"\tLoading cards from {path}..."
-        let! cards = Csv.loadCardFile path
-        log.Information $"\tFound {cards.Length} cards."
+        let! cards = DragonShield.loadCardFile path
+        log.Information $"\tFound {cards.Length} unique cards, {cards |> Seq.sumBy fst} total cards."
         return cards
     }
 
@@ -101,7 +100,7 @@ let loadTransactionDetails (dir: Workspace.TransactionDirectory) (log: ILogger) 
             |> Option.defaultValue []
             |> collectAsync (fun f -> loadCardFile f dir log)
 
-        log.Information $"\tAdding {add.Length} and subtracting {subtract.Length} cards."
+        log.Information $"\t+{add.Length}/-{subtract.Length} unique cards, +{add |> Seq.sumBy fst}/-{subtract |> Seq.sumBy fst} total cards."
         return Ok {
             Info = manifest.Info
             Add = add

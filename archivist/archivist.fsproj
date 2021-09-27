@@ -12,6 +12,7 @@
     <Compile Include="Workspace.fs" />
     <Compile Include="Context.fs" />
     <Compile Include="Model.fs" />
+    <Compile Include="DragonShield.fs" />
     <Compile Include="Csv.fs" />
     <Compile Include="TransactionLoader.fs" />
     <Compile Include="InventoryGenerator.fs" />

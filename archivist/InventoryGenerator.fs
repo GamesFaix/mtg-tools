@@ -26,7 +26,7 @@ let private loadAndApply (inv: Inventory) (transactionName: string) (ctx: Worksp
         let! result = TransactionLoader.loadTransactionDetails dir ctx.Log
         let result = result |> Result.map (apply inv)
         match result with
-        | Ok inv -> ctx.Log.Information $"{inv.Cards.Length} cards in inventory."
+        | Ok inv -> ctx.Log.Information $"{inv.Cards.Length} unique cards, {inv.Cards |> Seq.sumBy fst} total cards in inventory."
         | _ -> ()
         return result
     }
