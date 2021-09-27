@@ -24,12 +24,6 @@ let private collectAsync<'a, 'b> (projection: 'a -> 'b list Async) (source: 'a l
         return results |> Seq.toList
     }
     
-(*
-    Allow more implicitly defined transactions.
-    * All .txt files are assumed to be part of AddFiles, only specifying SubtractFiles is required
-    * Allow omitting the manifest file. If no manifest, parse transaction directory name for title and date
-*)
-
 let private loadManfiest (dir: Workspace.TransactionDirectory) : TransactionManifest Async = 
     async {
         let pattern = Regex("(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-(?<title>.*)")
