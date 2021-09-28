@@ -3,6 +3,7 @@
 open System
 open System.Linq
 open Serilog
+open GamesFaix.MtgTools.Shared
 open Context
 open Model
 

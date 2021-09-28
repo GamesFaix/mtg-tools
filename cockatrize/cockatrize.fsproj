@@ -12,13 +12,15 @@
 
   <ItemGroup>
     <None Include="README.md" />
-    <Compile Include="Utils.fs" />
     <Compile Include="Dck.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Cod.fs" />
     <Compile Include="Validator.fs" />
-    <Compile Include="FileSystem.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\shared.fsproj" />
   </ItemGroup>
 
 </Project>

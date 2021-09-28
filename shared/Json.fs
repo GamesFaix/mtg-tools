@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Archivist.Json
+﻿module GamesFaix.MtgTools.Shared.Json
 
 open System
 open Microsoft.FSharp.Reflection

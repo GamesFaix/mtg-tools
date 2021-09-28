@@ -1,6 +1,7 @@
 ﻿module GamesFaix.MtgTools.Archivist.Context
 
 open Serilog
+open GamesFaix.MtgTools.Shared
 open Workspace
 
 (*

@@ -4,6 +4,7 @@ open Argu
 open GamesFaix.MtgTools.Designer
 open GamesFaix.MtgTools.Designer.Context
 open GamesFaix.MtgTools.Designer.Model
+open GamesFaix.MtgTools.Shared
 
 type private SaveMode = MtgdWriter.SaveMode
 

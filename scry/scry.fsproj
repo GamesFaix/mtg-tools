@@ -26,4 +26,8 @@
     <PackageReference Include="ScryfallAPI.Client" Version="2.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\shared\shared.fsproj" />
+  </ItemGroup>
+
 </Project>

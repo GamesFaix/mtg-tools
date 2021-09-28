@@ -4,6 +4,7 @@ open Argu
 open GamesFaix.MtgTools.Archivist
 open GamesFaix.MtgTools.Archivist.Context
 open GamesFaix.MtgTools.Archivist.Model
+open GamesFaix.MtgTools.Shared
 
 type Args =
     | [<AltCommandLine("-d")>] Dir of string

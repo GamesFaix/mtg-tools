@@ -3,6 +3,7 @@
 open System
 open System.Linq
 open System.Text
+open GamesFaix.MtgTools.Shared
 
 type DeckItem = {
     Name: string

@@ -2,6 +2,7 @@
 
 open System
 open GamesFaix.MtgTools.Cockatrize.Model
+open GamesFaix.MtgTools.Shared
 
 let private toListString (grp: (string * DeckItem list) list) : string =
     grp
