@@ -50,6 +50,7 @@ let private loadManfiest (dir: Workspace.TransactionDirectory) : TransactionMani
 
         let existingCardFiles = 
             Directory.GetFiles(dir.Path) 
+            |> Seq.map Path.GetFileName
             |> Seq.filter (fun f -> f.EndsWith(".txt"))
 
         let addFiles = 
