@@ -1,5 +1,6 @@
 ﻿module GamesFaix.MtgTools.Archivist.InventoryGenerator
 
+open System
 open Model
 open Context
 
@@ -7,8 +8,9 @@ let add (a: CardCount list) (b: CardCount list) : CardCount list =
     a |> List.append b
     |> List.groupBy snd
     |> List.map (fun (card, xs) -> (xs |> List.sumBy fst, card))
+    |> List.filter (fun (ct, _) -> ct <> 0) // Keep any negative counts for validation
 
-let subtract (given: CardCount list) (toSubtract: CardCount list) : CardCount list =
+let subtract (toSubtract: CardCount list) (given: CardCount list) : CardCount list =
     toSubtract
     |> List.map (fun (ct, card) -> (0-ct, card)) // Invert then add
     |> add given
@@ -59,8 +61,12 @@ let generate (ctx: WorkspaceContext) : Result<unit, string> Async =
     async {
         match! computeInventory ctx with
         | Ok inv ->
-            do! saveManifest inv ctx
-            do! saveCards inv ctx
-            return Ok ()
+            match Auditor.validate inv with
+            | Ok () ->
+                do! saveManifest inv ctx
+                do! saveCards inv ctx
+                return Ok ()
+            | Error issues ->
+                return Error (String.Join('\n', issues))
         | Error err -> return Error err
     }

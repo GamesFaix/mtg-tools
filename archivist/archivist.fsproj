@@ -15,6 +15,7 @@
     <Compile Include="DragonShield.fs" />
     <Compile Include="Csv.fs" />
     <Compile Include="TransactionLoader.fs" />
+    <Compile Include="Auditor.fs" />
     <Compile Include="InventoryGenerator.fs" />
     <Compile Include="Cli\Workspace.fs" />
     <Compile Include="Cli\RefreshDb.fs" />
