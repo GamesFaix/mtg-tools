@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Content Include="Properties\launchSettings.json" />
+    <Compile Include="Utils.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="FileSystem.fs" />
     <Compile Include="Workspace.fs" />
@@ -18,7 +19,6 @@
     <Compile Include="Auditor.fs" />
     <Compile Include="InventoryGenerator.fs" />
     <Compile Include="Cli\Workspace.fs" />
-    <Compile Include="Cli\RefreshDb.fs" />
     <Compile Include="Cli\Main.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

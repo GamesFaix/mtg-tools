@@ -2,14 +2,6 @@
 
 open System
 
-type InventoryCsvCard = {
-    Count : int
-    Name : string
-    Set : string
-    Version : string
-    Language : string
-}
-
 type Card = {
     Name : string
     Set : string
@@ -18,17 +10,6 @@ type Card = {
 }
 
 type CardCount = int * Card
-
-module Card =
-    
-    let toInventoryCsv ((ct, c): CardCount) : InventoryCsvCard =
-        {
-            Count = ct
-            Name = c.Name
-            Set = c.Set
-            Version = c.Version
-            Language = c.Language
-        }
 
 type TransactionInfo = {
     Title : string

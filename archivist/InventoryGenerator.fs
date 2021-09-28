@@ -55,13 +55,13 @@ let private saveManifest (inv: Inventory) (ctx: WorkspaceContext) : unit Async =
 
 let private saveCards (inv: Inventory) (ctx: WorkspaceContext) : unit Async =
     let path = ctx.Workspace.Inventory.Current.Cards
-    Csv.saveCardFile path inv.Cards
+    Csv.saveInventoryFile path inv.Cards
 
 let generate (ctx: WorkspaceContext) : Result<unit, string> Async =
     async {
         match! computeInventory ctx with
         | Ok inv ->
-            match Auditor.validate inv with
+            match Auditor.audit inv with
             | Ok () -> ()
             | Error issues ->
                 for i in issues do

@@ -6,12 +6,29 @@ open CsvHelper
 open CsvHelper.Configuration
 open Model
 
-let saveCardFile (path: string) (cards: CardCount list) : unit Async =
+type private InventoryCsvCard = {
+    Count : int
+    Name : string
+    Set : string
+    Version : string
+    Language : string
+}
+
+let private toInventoryCsv ((ct, c): CardCount) : InventoryCsvCard =
+    {
+        Count = ct
+        Name = c.Name
+        Set = c.Set
+        Version = c.Version
+        Language = c.Language
+    }
+
+let saveInventoryFile (path: string) (cards: CardCount list) : unit Async =
     async {
         let config = CsvConfiguration(CultureInfo.InvariantCulture)
         config.HasHeaderRecord <- true
 
-        let cards = cards |> Seq.map Card.toInventoryCsv |> Seq.sortBy (fun c -> c.Name)
+        let cards = cards |> Seq.map toInventoryCsv |> Seq.sortBy (fun c -> c.Name)
         
         use writer = new StreamWriter(path)
         use csv = new CsvWriter(writer, config)

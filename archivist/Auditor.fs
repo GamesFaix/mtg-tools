@@ -2,7 +2,7 @@
 
 open Model
 
-let validate (inv: Inventory) : Result<unit, string list> =
+let audit (inv: Inventory) : Result<unit, string list> =
     let issues = ResizeArray()
 
     // Negative counts

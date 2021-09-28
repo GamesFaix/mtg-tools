@@ -15,15 +15,6 @@ let private loadCardFile (name: string) (dir: Workspace.TransactionDirectory) (l
         return cards
     }
 
-let private collectAsync<'a, 'b> (projection: 'a -> 'b list Async) (source: 'a list) : 'b list Async =
-    async {
-        let results = ResizeArray()
-        for x in source do
-            let! ys = projection x
-            results.AddRange ys
-        return results |> Seq.toList
-    }
-    
 let private loadManfiest (dir: Workspace.TransactionDirectory) : TransactionManifest Async = 
     async {
         let pattern = Regex("(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-(?<title>.*)")
@@ -88,12 +79,12 @@ let loadTransactionDetails (dir: Workspace.TransactionDirectory) (log: ILogger) 
         let! add = 
             manifest.AddFiles 
             |> Option.defaultValue [] 
-            |> collectAsync (fun f -> loadCardFile f dir log)
+            |> List.collectAsync (fun f -> loadCardFile f dir log)
 
         let! subtract =
             manifest.SubtractFiles 
             |> Option.defaultValue []
-            |> collectAsync (fun f -> loadCardFile f dir log)
+            |> List.collectAsync (fun f -> loadCardFile f dir log)
 
         log.Information $"\t+{add.Length}/-{subtract.Length} unique cards, +{add |> Seq.sumBy fst}/-{subtract |> Seq.sumBy fst} total cards."
         return Ok {
