@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Properties\launchSettings.json" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="Json.fs" />
+    <Compile Include="FileSystem.fs" />
+    <Compile Include="Workspace.fs" />
+    <Compile Include="Context.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="DragonShield.fs" />
+    <Compile Include="Csv.fs" />
+    <Compile Include="TransactionLoader.fs" />
+    <Compile Include="Auditor.fs" />
+    <Compile Include="InventoryGenerator.fs" />
+    <Compile Include="Cli\Workspace.fs" />
+    <Compile Include="Cli\Main.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Argu" Version="6.1.1" />
+    <PackageReference Include="CsvHelper" Version="27.1.1" />
+    <PackageReference Include="FSharp.Data" Version="4.2.3" />
+    <PackageReference Include="FSharpx.Extras" Version="3.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+  </ItemGroup>
+
+</Project>
