@@ -62,11 +62,12 @@ let generate (ctx: WorkspaceContext) : Result<unit, string> Async =
         match! computeInventory ctx with
         | Ok inv ->
             match Auditor.validate inv with
-            | Ok () ->
-                do! saveManifest inv ctx
-                do! saveCards inv ctx
-                return Ok ()
+            | Ok () -> ()
             | Error issues ->
-                return Error (String.Join('\n', issues))
+                for i in issues do
+                    ctx.Log.Warning i
+            do! saveManifest inv ctx
+            do! saveCards inv ctx
+            return Ok ()
         | Error err -> return Error err
     }
