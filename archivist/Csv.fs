@@ -11,7 +11,7 @@ let saveCardFile (path: string) (cards: CardCount list) : unit Async =
         let config = CsvConfiguration(CultureInfo.InvariantCulture)
         config.HasHeaderRecord <- true
 
-        let cards = cards |> Seq.map Card.toInventoryCsv |> Seq.sortBy (fun c -> c.Name)b  
+        let cards = cards |> Seq.map Card.toInventoryCsv |> Seq.sortBy (fun c -> c.Name)
         
         use writer = new StreamWriter(path)
         use csv = new CsvWriter(writer, config)
