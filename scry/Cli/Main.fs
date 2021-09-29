@@ -4,7 +4,6 @@ open Argu
 open GamesFaix.MtgTools
 open GamesFaix.MtgTools.Scry
 open GamesFaix.MtgTools.Shared
-open GamesFaix.MtgTools.Shared.Context
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Workspace of Shared.Cli.Workspace.Args ParseResults
@@ -28,7 +27,7 @@ let command (args: Args ParseResults) (ctx: Context.Context) : CommandResult =
         | Query query -> 
             match ctx with
             | Context.Workspace ctx ->
-                return! Query.command query ctx
+                return! QueryWithUnownedCards.command query ctx
             | _ ->
                 return Error "This operation requires a workspace."
     }

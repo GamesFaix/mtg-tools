@@ -16,11 +16,10 @@
     <Compile Include="Context.fs" />
     <Compile Include="Scryfall.fs" />
     <Compile Include="Query.fs" />
+    <Compile Include="QueryWithUnownedCards.fs" />
     <Compile Include="Cli\Main.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="27.1.1" />
