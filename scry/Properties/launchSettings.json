@@ -2,7 +2,7 @@
   "profiles": {
     "scry": {
       "commandName": "Project",
-      "commandLineArgs": "query t:Kithkin"
+      "commandLineArgs": "collect \"s:6ED r:C\""
     }
   }
 }

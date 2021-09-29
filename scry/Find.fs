@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Scry.Query
+﻿module GamesFaix.MtgTools.Scry.Find
 
 open System
 open System.Linq
@@ -18,28 +18,28 @@ let mergeSetData
     rawInventory
     |> List.map (fun (ct, c) ->
         match index.TryGetValue(c.Set) with
-        | (true, set) -> ((ct, c), Some set)
-        | _ -> ((ct, c), None)
+        | (true, set) -> (ct, c, Some set)
+        | _ -> (ct, c, None)
     )
 
 type InventoryCard = string * CardCount list
 
-let groupEditions (inventoryWithSets: (CardCount * ScryfallSet option) list) : InventoryCard list =
+let groupEditions (inventoryWithSets: (int * Card * ScryfallSet option) list) : InventoryCard list =
     inventoryWithSets
-    |> List.groupBy (fun ((ct, c), set) -> c.Name)
-    |> List.map (fun (name, editions) ->
-        let editions =
-            editions
-            |> List.sortBy (fun (_, set) ->
+    |> List.groupBy (fun (ct, c, set) -> c.Name)
+    |> List.map (fun (name, printings) ->
+        let printings =
+            printings
+            |> List.sortBy (fun (_, _, set) ->
                 set
                 |> Option.bind (fun x -> x.ReleaseDate |> Option.ofNullable)
                 |> Option.defaultValue DateTime.MaxValue)
-            |> List.map (fun ((ct, c), set) ->
+            |> List.map (fun (ct, c, set) ->
                 match set with
                 | Some s -> (ct, { c with Set = $"{s.Name} ({s.Code.ToUpperInvariant()})" })
                 | None -> (ct, c)
             )
-        (name, editions)
+        (name, printings)
     )
 
 let joinResults
