@@ -16,6 +16,8 @@
     </None>
     <Compile Include="Scryfall.fs" />
     <Compile Include="Inventory.fs" />
+    <Compile Include="Query.fs" />
+    <Compile Include="Cli\Main.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
