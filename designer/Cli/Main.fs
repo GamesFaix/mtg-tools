@@ -26,8 +26,8 @@ let command (args: Args ParseResults) : Reader<Context.Context, Shared.Types.Com
     match args.GetAllResults().Head with
     | Workspace args -> 
         Shared.Cli.Workspace.command
-            Context.getWorkspace
-            Context.setWorkspace
+            Shared.Context.getWorkspace
+            Shared.Context.setWorkspace
             args
 
     | Login results -> Login.command results

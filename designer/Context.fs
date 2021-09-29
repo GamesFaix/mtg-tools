@@ -1,6 +1,7 @@
 ﻿module GamesFaix.MtgTools.Designer.Context
 
 open Serilog
+open GamesFaix.MtgTools
 open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
 open Workspace
@@ -13,33 +14,6 @@ open Workspace
     login {user} {pass} --save // logs in and saves credentials for later use
     logout //log out and delete credentials file
 *)
-
-type Configuration = {
-    Workspace: string
-}
-
-let private loadConfig () =
-    FileSystem.loadFromJson<Configuration> "./configuration.json"
-
-let private saveConfig (cfg: Configuration) =
-    FileSystem.saveToJson cfg "./configuration.json"
-
-let getWorkspace () = async {
-    let! cfg = loadConfig ()
-    return cfg |> Option.map (fun c -> c.Workspace)
-}
-
-let setWorkspace (directory: string) : unit Async = async {
-    let! maybeConfig = loadConfig ()
-    let cfg = match maybeConfig with
-              | Some cfg -> { cfg with Workspace = directory }
-              | None -> { Workspace = directory }
-    return! saveConfig cfg
-}
-
-type EmptyContext = {
-    Log : ILogger
-}
 
 type WorkspaceContext = {
     Log : ILogger
@@ -65,7 +39,7 @@ with
             | User ctx -> ctx.Log
 
 let loadContext () : Context Async = async {
-    match! getWorkspace () with
+    match! Shared.Context.getWorkspace () with
     | None ->
         return Context.Empty { Log = Log.logger }
     | Some dir ->

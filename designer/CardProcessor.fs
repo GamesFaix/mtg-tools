@@ -114,7 +114,7 @@ let processCard (card: CardDetails) ctx =
         return processCardInner cardsToCenter card
     }
 
-let processSet (setAbbrev: string) (cards: CardDetails list) ctx =
+let processSet (setAbbrev: string) (cards: CardDetails list) (ctx: UserContext) =
     async {
         ctx.Log.Information "Processing cards..."
 
