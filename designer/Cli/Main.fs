@@ -22,15 +22,15 @@ type Args =
             | Set _ -> "Performs operations on sets of cards."
             | Card _ -> "Performs operations on individual cards."
 
-let getJob (results: Args ParseResults) : Reader<Context.Context, Shared.Types.CommandResult> =
-    match results.GetAllResults().Head with
+let command (args: Args ParseResults) : Reader<Context.Context, Shared.Types.CommandResult> =
+    match args.GetAllResults().Head with
     | Workspace args -> 
         Shared.Cli.Workspace.command
             Context.getWorkspace
             Context.setWorkspace
             args
 
-    | Login results -> Login.getJob results
+    | Login results -> Login.command results
     //| Logout results -> failwith "Not implemented"
-    | Set results -> Set.getJob results
-    | Card results -> Card.getJob results
+    | Set results -> Set.command results
+    | Card results -> Card.command results

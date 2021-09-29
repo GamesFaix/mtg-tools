@@ -33,10 +33,10 @@ module Copy =
                 | ToSet _ -> "The copy's set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (results: Args ParseResults) =
-        let fromSet = results.GetResult FromSet
-        let toSet = results.GetResult ToSet
-        let name = results.GetResult Name
+    let command (args: Args ParseResults) =
+        let fromSet = args.GetResult FromSet
+        let toSet = args.GetResult ToSet
+        let name = args.GetResult Name
         copyOrMove name fromSet toSet SaveMode.Create
 
 module Delete =
@@ -50,10 +50,10 @@ module Delete =
                 | Set _ -> "The card's set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (results: Args ParseResults) ctx =
+    let command (args: Args ParseResults) ctx =
         async {
-            let set = results.GetResult Set
-            let name = results.GetResult Name
+            let set = args.GetResult Set
+            let name = args.GetResult Name
             ctx.Log.Information $"Deleting card {set} - {name}..."
             let! cardInfos = MtgdReader.getSetCardInfos set ctx
             let card = cardInfos |> Seq.find (fun c -> c.Name = name)
@@ -75,10 +75,10 @@ module Move =
                 | ToSet _ -> "The card's new set abbreviation."
                 | Name _ -> "The card's name."
 
-    let getJob (results: Args ParseResults) =
-        let fromSet = results.GetResult FromSet
-        let toSet = results.GetResult ToSet
-        let name = results.GetResult Name
+    let command (args: Args ParseResults) =
+        let fromSet = args.GetResult FromSet
+        let toSet = args.GetResult ToSet
+        let name = args.GetResult Name
         copyOrMove name fromSet toSet SaveMode.Edit
 
 type Args =
@@ -93,11 +93,11 @@ type Args =
             | Delete _ -> "Deletes a card."
             | Move _ -> "Moves a card."
 
-let getJob (results: Args ParseResults) =
+let command (args: Args ParseResults) =
     fun ctx ->
-        match ctx, (results.GetAllResults().Head) with
+        match ctx, (args.GetAllResults().Head) with
         | Empty _, _
         | Workspace _, _ -> Error "This operation requires a logged in user." |> async.Return
-        | User ctx, Copy results -> Copy.getJob results ctx
-        | User ctx, Delete results -> Delete.getJob results ctx
-        | User ctx, Move results -> Move.getJob results ctx
+        | User ctx, Copy results -> Copy.command results ctx
+        | User ctx, Delete results -> Delete.command results ctx
+        | User ctx, Move results -> Move.command results ctx

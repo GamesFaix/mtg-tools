@@ -15,9 +15,9 @@ type Args =
             | Workspace _ -> "Gets or sets the workspace directory"
             | CreateInventory -> "Creates a new current inventory file from all transactions in the workspace."
 
-let getJob (results: Args ParseResults) (ctx: Context.Context) : CommandResult =
+let command (args: Args ParseResults) (ctx: Context.Context) : CommandResult =
     async {
-        match results.GetAllResults().Head with
+        match args.GetAllResults().Head with
         | Workspace args ->
             return! Shared.Cli.Workspace.command    
                         Context.getWorkspace
