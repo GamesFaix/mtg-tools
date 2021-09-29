@@ -6,20 +6,6 @@ open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
 open Workspace
 
-(*
-    Flow:
-    workspace None // displays the workspace
-    workspace {dir} // saves config file setting workspace to dir
-    login {user} {pass} // logs in a {user} {pass} and saves cookie to a file for later use
-    login {user} {pass} --save // logs in and saves credentials for later use
-    logout //log out and delete credentials file
-*)
-
-type WorkspaceContext = {
-    Log : ILogger
-    Workspace : WorkspaceDirectory
-}
-
 type UserContext = {
     Log : ILogger
     Cookie : Auth.Cookie
@@ -28,7 +14,7 @@ type UserContext = {
 
 type Context =
     | Empty of EmptyContext
-    | Workspace of WorkspaceContext
+    | Workspace of Shared.Context.WorkspaceContext<WorkspaceDirectory>
     | User of UserContext
 with
     interface IContext with

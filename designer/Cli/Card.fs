@@ -6,7 +6,7 @@ open GamesFaix.MtgTools.Designer.Context
 
 type private SaveMode = MtgdWriter.SaveMode
 
-let private copyOrMove (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) ctx =
+let private copyOrMove (name: string) (fromSet: string) (toSet: string) (mode: SaveMode) (ctx: UserContext) =
     async {
         let action = if mode = SaveMode.Create then "Copying" else "Moving"
         ctx.Log.Information $"{action} card {name} from {fromSet} to {toSet}..."

@@ -4,22 +4,10 @@ open Serilog
 open GamesFaix.MtgTools
 open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
-open Workspace
-
-(*
-    Flow:
-    workspace None // displays the workspace
-    workspace {dir} // saves config file setting workspace to dir
-*)
-
-type WorkspaceContext = {
-    Log : ILogger
-    Workspace : WorkspaceDirectory
-}
 
 type Context =
     | Empty of Shared.Context.EmptyContext
-    | Workspace of WorkspaceContext
+    | Workspace of Shared.Context.WorkspaceContext<Workspace.WorkspaceDirectory>
 with    
     interface IContext with
         member this.Log =

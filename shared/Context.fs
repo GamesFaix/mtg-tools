@@ -9,6 +9,11 @@ type EmptyContext = {
     Log : ILogger
 }
 
+type WorkspaceContext<'workspace> = {
+    Log : ILogger
+    Workspace : 'workspace
+}
+
 type private Configuration = {
     Workspace: string
 }

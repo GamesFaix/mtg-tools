@@ -21,7 +21,7 @@ let private apply (inv: Inventory) (tran: TransactionDetails) : Inventory =
         Transactions = tran.Info :: inv.Transactions
     }
 
-let private loadAndApply (inv: Inventory) (transactionName: string) (ctx: WorkspaceContext) : Result<Inventory, string> Async =
+let private loadAndApply (inv: Inventory) (transactionName: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : Result<Inventory, string> Async =
     async {
         let dir = ctx.Workspace.Transactions.GetTransactionDirectory transactionName
         ctx.Log.Information $"Loading transaction {transactionName}..."
@@ -33,7 +33,7 @@ let private loadAndApply (inv: Inventory) (transactionName: string) (ctx: Worksp
         return result
     }
 
-let private computeInventory (ctx: WorkspaceContext) : Result<Inventory, string> Async =
+let private computeInventory (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : Result<Inventory, string> Async =
     async {
         let dir = ctx.Workspace.Transactions
         ctx.Log.Information "Starting with empty inventory..."
@@ -48,16 +48,16 @@ let private computeInventory (ctx: WorkspaceContext) : Result<Inventory, string>
         return result
     }
 
-let private saveManifest (inv: Inventory) (ctx: WorkspaceContext) : unit Async =
+let private saveManifest (inv: Inventory) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : unit Async =
     let manifest = Inventory.manifest inv
     let path = ctx.Workspace.Inventory.Current.Manifest
     FileSystem.saveToJson manifest path
 
-let private saveCards (inv: Inventory) (ctx: WorkspaceContext) : unit Async =
+let private saveCards (inv: Inventory) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : unit Async =
     let path = ctx.Workspace.Inventory.Current.Cards
     Csv.saveInventoryFile path inv.Cards
 
-let generate (ctx: WorkspaceContext) : Result<unit, string> Async =
+let generate (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : Result<unit, string> Async =
     async {
         match! computeInventory ctx with
         | Ok inv ->

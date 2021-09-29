@@ -100,7 +100,7 @@ let private processCardInner (cardsToCenter: string list) (card: CardDetails) : 
 
     card
 
-let private loadCardsToCenter (setAbbrev: string) ctx =
+let private loadCardsToCenter (setAbbrev: string) (ctx: UserContext) =
     async {
         let path = ctx.Workspace.Set(setAbbrev).CenterFixes
         match! FileSystem.loadFromJson<string list> path with
