@@ -6,9 +6,11 @@
 
   <ItemGroup>
     <Compile Include="Log.fs" />
+    <Compile Include="Context.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="FileSystem.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

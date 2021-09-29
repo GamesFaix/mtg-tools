@@ -2,6 +2,7 @@
 
 open Serilog
 open GamesFaix.MtgTools.Shared
+open GamesFaix.MtgTools.Shared.Context
 open Workspace
 
 (*
@@ -56,11 +57,12 @@ type Context =
     | Workspace of WorkspaceContext
     | User of UserContext
 with
-    member this.Log =
-        match this with
-        | Empty ctx -> ctx.Log
-        | Workspace ctx -> ctx.Log
-        | User ctx -> ctx.Log
+    interface IContext with
+        member this.Log =
+            match this with
+            | Empty ctx -> ctx.Log
+            | Workspace ctx -> ctx.Log
+            | User ctx -> ctx.Log
 
 let loadContext () : Context Async = async {
     match! getWorkspace () with
