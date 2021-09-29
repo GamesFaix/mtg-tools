@@ -3,13 +3,14 @@
 open Argu
 open Serilog
 open Context
+open GamesFaix.MtgTools.Shared
 
 let main<'ctx, 'args 
     when 'ctx :> IContext 
     and 'args :> IArgParserTemplate
     > 
     (programName: string)
-    (run: ParseResults<'args> -> 'ctx -> Async<Result<unit, string>>)
+    (run: ParseResults<'args> -> 'ctx -> CommandResult)
     args
     : 'ctx -> int Async =
     

@@ -10,6 +10,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="FileSystem.fs" />
+    <Compile Include="Types.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

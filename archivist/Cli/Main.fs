@@ -3,7 +3,7 @@
 open Argu
 open GamesFaix.MtgTools.Archivist
 open GamesFaix.MtgTools.Archivist.Context
-open GamesFaix.MtgTools.Archivist.Model
+open GamesFaix.MtgTools.Shared
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Workspace of Workspace.Args ParseResults
@@ -15,7 +15,7 @@ type Args =
             | Workspace _ -> "Gets or sets the workspace directory"
             | CreateInventory -> "Creates a new current inventory file from all transactions in the workspace."
 
-let getJob (results: Args ParseResults) (ctx: Context) : JobResult =
+let getJob (results: Args ParseResults) (ctx: Context) : CommandResult =
     async {
         match results.GetAllResults().Head with
         | Workspace args ->

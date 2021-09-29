@@ -2,6 +2,7 @@
 
 open Argu
 open GamesFaix.MtgTools.Designer
+open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
 
 type Args =
@@ -12,7 +13,7 @@ type Args =
             match this with
             | Dir _ -> "Directory to set as workspace."
 
-let getJob (results: Args ParseResults) (ctx: IContext) : JobResult =
+let getJob (results: Args ParseResults) (ctx: IContext) : CommandResult =
     async {
         let dir = results.TryGetResult Args.Dir
 
