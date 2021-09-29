@@ -1,50 +1,10 @@
 ﻿module GamesFaix.MtgTools.Designer.Context
 
 open Serilog
+open GamesFaix.MtgTools
 open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
 open Workspace
-
-(*
-    Flow:
-    workspace None // displays the workspace
-    workspace {dir} // saves config file setting workspace to dir
-    login {user} {pass} // logs in a {user} {pass} and saves cookie to a file for later use
-    login {user} {pass} --save // logs in and saves credentials for later use
-    logout //log out and delete credentials file
-*)
-
-type Configuration = {
-    Workspace: string
-}
-
-let private loadConfig () =
-    FileSystem.loadFromJson<Configuration> "./configuration.json"
-
-let private saveConfig (cfg: Configuration) =
-    FileSystem.saveToJson cfg "./configuration.json"
-
-let getWorkspace () = async {
-    let! cfg = loadConfig ()
-    return cfg |> Option.map (fun c -> c.Workspace)
-}
-
-let setWorkspace (directory: string) : unit Async = async {
-    let! maybeConfig = loadConfig ()
-    let cfg = match maybeConfig with
-              | Some cfg -> { cfg with Workspace = directory }
-              | None -> { Workspace = directory }
-    return! saveConfig cfg
-}
-
-type EmptyContext = {
-    Log : ILogger
-}
-
-type WorkspaceContext = {
-    Log : ILogger
-    Workspace : WorkspaceDirectory
-}
 
 type UserContext = {
     Log : ILogger
@@ -54,7 +14,7 @@ type UserContext = {
 
 type Context =
     | Empty of EmptyContext
-    | Workspace of WorkspaceContext
+    | Workspace of Shared.Context.WorkspaceContext<WorkspaceDirectory>
     | User of UserContext
 with
     interface IContext with
@@ -65,7 +25,7 @@ with
             | User ctx -> ctx.Log
 
 let loadContext () : Context Async = async {
-    match! getWorkspace () with
+    match! Shared.Context.getWorkspace () with
     | None ->
         return Context.Empty { Log = Log.logger }
     | Some dir ->

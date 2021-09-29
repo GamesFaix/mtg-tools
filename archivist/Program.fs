@@ -9,7 +9,7 @@ let main args =
         return! 
             Shared.Program.main
                 "archivist"
-                Cli.Main.getJob
+                Cli.Main.command
                 args
                 ctx
     }

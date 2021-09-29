@@ -34,9 +34,9 @@ module Audit =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) ctx =
+    let command (args: Args ParseResults) ctx =
         async {
-            let set = results.GetResult Set
+            let set = args.GetResult Set
             ctx.Log.Information $"Auditing set {set}..."
             let! cards = loadCards set ctx
             Auditor.findIssues cards
@@ -56,9 +56,9 @@ module Copy =
                 | From _ -> "The set abbreviation."
                 | To _ -> "The copy's set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        let fromSet = results.GetResult From
-        let toSet = results.GetResult To
+    let command (args: Args ParseResults) =
+        let fromSet = args.GetResult From
+        let toSet = args.GetResult To
         copyOrRename fromSet toSet SaveMode.Create
 
 module Delete =
@@ -70,9 +70,9 @@ module Delete =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) ctx =
+    let command (args: Args ParseResults) ctx =
         async {
-            let set = results.GetResult Set
+            let set = args.GetResult Set
             ctx.Log.Information $"Deleting set {set}..."
             let! cardInfos = MtgdReader.getSetCardInfos set ctx
             do! MtgdWriter.deleteCards cardInfos ctx
@@ -89,9 +89,9 @@ module Layout =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) ctx =
+    let command (args: Args ParseResults) ctx =
         async {
-            let set = results.GetResult Set
+            let set = args.GetResult Set
             ctx.Log.Information $"Creating HTML layout for set {set}..."
             let! cardInfos = MtgdReader.getSetCardInfos set ctx
             let html = Layout.createHtmlLayout cardInfos
@@ -109,8 +109,8 @@ module Pull =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) ctx =
-        let set = results.GetResult Set
+    let command (args: Args ParseResults) ctx =
+        let set = args.GetResult Set
         let setDir = ctx.Workspace.Set(set)
 
         let downloadImage (card: CardDetails) =
@@ -152,9 +152,9 @@ module Rename =
                 | From _ -> "The old set abbreviation."
                 | To _ -> "The new set abbreviation."
 
-    let getJob (results: Args ParseResults) =
-        let fromSet = results.GetResult From
-        let toSet = results.GetResult To
+    let command (args: Args ParseResults) =
+        let fromSet = args.GetResult From
+        let toSet = args.GetResult To
         copyOrRename fromSet toSet SaveMode.Edit
 
 module Scrub =
@@ -166,9 +166,9 @@ module Scrub =
                 match this with
                 | Set _ -> "The set abbreviation."
 
-    let getJob (results: Args ParseResults) ctx =
+    let command (args: Args ParseResults) ctx =
         async {
-            let set = results.GetResult Set
+            let set = args.GetResult Set
             ctx.Log.Information $"Scrubbing set {set}..."
             let! cards = loadCards set ctx
             let! _ = MtgdWriter.saveCards SaveMode.Edit cards ctx
@@ -196,15 +196,15 @@ type Args =
             | Rename _ -> "Renames a set."
             | Scrub _ -> "Downloads cards, processes them, then posts updates. Fixes things like collectors numbers."
 
-let getJob (results: Args ParseResults) = function
+let command (args: Args ParseResults) = function
     | Empty _
     | Workspace _ -> Error "This operation requires a logged in user." |> async.Return
     | User ctx ->
-        match results.GetAllResults().Head with
-        | Audit results -> Audit.getJob results ctx
-        | Copy results -> Copy.getJob results ctx
-        | Delete results -> Delete.getJob results ctx
-        | Layout results -> Layout.getJob results ctx
-        | Pull results -> Pull.getJob results ctx
-        | Rename results -> Rename.getJob results ctx
-        | Scrub results -> Scrub.getJob results ctx
+        match args.GetAllResults().Head with
+        | Audit results -> Audit.command results ctx
+        | Copy results -> Copy.command results ctx
+        | Delete results -> Delete.command results ctx
+        | Layout results -> Layout.command results ctx
+        | Pull results -> Pull.command results ctx
+        | Rename results -> Rename.command results ctx
+        | Scrub results -> Scrub.command results ctx

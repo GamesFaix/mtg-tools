@@ -16,10 +16,10 @@ type Args =
             | Pass _ -> "Password to use. If blank, tries to use saved credentials."
             | SaveCreds _ -> "If true, saves credentials to disc. Defaults to false."
 
-let getJob (results: Args ParseResults) =
-    let email = results.GetResult Email
-    let pass = results.GetResult Pass
-    let saveCreds = results.GetResult SaveCreds |> Option.defaultValue false
+let command (args: Args ParseResults) =
+    let email = args.GetResult Email
+    let pass = args.GetResult Pass
+    let saveCreds = args.GetResult SaveCreds |> Option.defaultValue false
 
     let login =
         let creds : Auth.Credentials option =

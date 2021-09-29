@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Archivist.Context
+﻿module GamesFaix.MtgTools.Scry.Context
 
 open Serilog
 open GamesFaix.MtgTools
@@ -7,7 +7,7 @@ open GamesFaix.MtgTools.Shared.Context
 
 type Context =
     | Empty of Shared.Context.EmptyContext
-    | Workspace of Shared.Context.WorkspaceContext<Workspace.WorkspaceDirectory>
+    | Workspace of WorkspaceContext<Workspace.WorkspaceDirectory>
 with    
     interface IContext with
         member this.Log =

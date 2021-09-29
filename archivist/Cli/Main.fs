@@ -15,14 +15,14 @@ type Args =
             | Workspace _ -> "Gets or sets the workspace directory"
             | CreateInventory -> "Creates a new current inventory file from all transactions in the workspace."
 
-let getJob (results: Args ParseResults) (ctx: Context.Context) : CommandResult =
+let command (args: Args ParseResults) (ctx: Context.Context) : CommandResult =
     async {
-        match results.GetAllResults().Head with
+        match args.GetAllResults().Head with
         | Workspace args ->
             return! Shared.Cli.Workspace.command    
-                        Context.getWorkspace
+                        Shared.Context.getWorkspace
                         (fun dir -> async {
-                            do! Context.setWorkspace dir
+                            do! Shared.Context.setWorkspace dir
                             let workspace = Workspace.WorkspaceDirectory.create dir
                             FileSystem.createDirectoryIfMissing workspace.Inventory.Path
                             FileSystem.createDirectoryIfMissing workspace.Transactions.Path

@@ -1,15 +1,7 @@
 ﻿module GamesFaix.MtgTools.Archivist.Model
 
 open System
-
-type Card = {
-    Name : string
-    Set : string
-    Version : string
-    Language : string
-}
-
-type CardCount = int * Card
+open GamesFaix.MtgTools.Shared.Inventory
 
 type TransactionInfo = {
     Title : string

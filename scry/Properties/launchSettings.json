@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "scry": {
+      "commandName": "Project",
+      "commandLineArgs": "query t:Kithkin"
+    }
+  }
+}
