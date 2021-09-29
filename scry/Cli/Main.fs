@@ -16,7 +16,7 @@ type Args =
             | Workspace _ -> "Gets or sets the workspace directory"
             | Query _ -> "Queries inventory, using scryfall query syntax."
 
-let command (args: Args ParseResults) (ctx: IContext) : CommandResult =
+let command (args: Args ParseResults) (ctx: Context.Context) : CommandResult =
     async {
         match args.GetAllResults().Head with
         | Workspace args ->
@@ -26,5 +26,9 @@ let command (args: Args ParseResults) (ctx: IContext) : CommandResult =
                         args
                         ctx
         | Query query -> 
-            return! Query.command query "inventory-path" ctx
+            match ctx with
+            | Context.Workspace ctx ->
+                return! Query.command query ctx
+            | _ ->
+                return Error "This operation requires a workspace."
     }

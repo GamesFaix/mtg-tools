@@ -5,6 +5,7 @@ open System.IO
 
 type WorkspaceDirectory = {
     Path : string
+    Cards : string
 }
 module WorkspaceDirectory =
     let create (rootDir: string) : WorkspaceDirectory =
@@ -15,4 +16,5 @@ module WorkspaceDirectory =
 
         {
             Path = rootDir
+            Cards = Path.Combine(rootDir, "cards.csv")
         }

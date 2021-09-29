@@ -14,7 +14,9 @@ type WorkspaceContext<'workspace> = {
     Workspace : 'workspace
 }
 
-type private Configuration = {
+// Must be public for Newtonsoft to serialize it
+[<CLIMutable>]
+type Configuration = {
     Workspace: string
 }
 

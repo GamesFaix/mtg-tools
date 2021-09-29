@@ -74,7 +74,7 @@ let formatCardOutput (scryfallCard: ScryfallCard, inventoryEditions: CardEdition
 
     sb.ToString()
 
-let command (query: string) (inventoryPath: string) (ctx: IContext) : CommandResult =
+let command (query: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : CommandResult =
     async {
         ctx.Log.Information "Loading set information from Scryfall..."
         let! sets = Scryfall.getSets ()
@@ -84,8 +84,8 @@ let command (query: string) (inventoryPath: string) (ctx: IContext) : CommandRes
         let! scryfallResults = Scryfall.search query
         ctx.Log.Information $"  Found {scryfallResults.Length} results"
 
-        ctx.Log.Information $"Loading inventory from {inventoryPath}..."
-        let rawInventory = Inventory.load inventoryPath
+        ctx.Log.Information $"Loading inventory from {ctx.Workspace.Path}..."
+        let rawInventory = Inventory.load ctx.Workspace.Cards
         ctx.Log.Information 
             (sprintf
                 "  Found %i editions, and %i total cards."
