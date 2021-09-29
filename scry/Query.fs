@@ -4,29 +4,29 @@ open System
 open System.Linq
 open System.Text
 open System.Text.RegularExpressions
-open GamesFaix.MtgTools.Scry.Inventory
 open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
+open GamesFaix.MtgTools.Shared.Inventory
 
 type ScryfallCard = ScryfallApi.Client.Models.Card
 type ScryfallSet = ScryfallApi.Client.Models.Set
 
 let mergeSetData
     (sets: ScryfallSet list)
-    (rawInventory: Inventory.CardEdition list) =
+    (rawInventory: CardCount list) =
     let index = sets.ToDictionary((fun x -> x.Code), StringComparer.InvariantCultureIgnoreCase)
     rawInventory
-    |> List.map (fun x ->
-        match index.TryGetValue(x.Set) with
-        | (true, set) -> (x, Some set)
-        | _ -> (x, None)
+    |> List.map (fun (ct, c) ->
+        match index.TryGetValue(c.Set) with
+        | (true, set) -> ((ct, c), Some set)
+        | _ -> ((ct, c), None)
     )
 
-type InventoryCard = string * CardEdition list
+type InventoryCard = string * CardCount list
 
-let groupEditions (inventoryWithSets: (Inventory.CardEdition * ScryfallSet option) list) : InventoryCard list =
+let groupEditions (inventoryWithSets: (CardCount * ScryfallSet option) list) : InventoryCard list =
     inventoryWithSets
-    |> List.groupBy (fun (edition, set) -> edition.Name)
+    |> List.groupBy (fun ((ct, c), set) -> c.Name)
     |> List.map (fun (name, editions) ->
         let editions =
             editions
@@ -34,10 +34,10 @@ let groupEditions (inventoryWithSets: (Inventory.CardEdition * ScryfallSet optio
                 set
                 |> Option.bind (fun x -> x.ReleaseDate |> Option.ofNullable)
                 |> Option.defaultValue DateTime.MaxValue)
-            |> List.map (fun (edition, set) ->
+            |> List.map (fun ((ct, c), set) ->
                 match set with
-                | Some s -> { edition with Set = $"{s.Name} ({s.Code.ToUpperInvariant()})" }
-                | None -> edition
+                | Some s -> (ct, { c with Set = $"{s.Name} ({s.Code.ToUpperInvariant()})" })
+                | None -> (ct, c)
             )
         (name, editions)
     )
@@ -45,7 +45,7 @@ let groupEditions (inventoryWithSets: (Inventory.CardEdition * ScryfallSet optio
 let joinResults
     (scryfallResults: ScryfallCard list)
     (inventory: InventoryCard list)
-    : (ScryfallCard * list<CardEdition>) list =
+    : (ScryfallCard * list<CardCount>) list =
     Enumerable.Join(
         scryfallResults,
         inventory,
@@ -55,21 +55,21 @@ let joinResults
     )
     |> Seq.toList
 
-let formatCardOutput (scryfallCard: ScryfallCard, inventoryEditions: CardEdition list) : string =
+let formatCardOutput (scryfallCard: ScryfallCard, inventoryEditions: CardCount list) : string =
     let name = scryfallCard.Name.PadRight(30)
     let typeline = scryfallCard.TypeLine.PadRight(25)
     let cost =
         Regex.Replace(scryfallCard.ManaCost, "{(\\d|W|U|B|R|G)}", "$1")
              .PadLeft(6)
-    let count = inventoryEditions |> Seq.sumBy (fun x -> x.Count)
+    let count = inventoryEditions |> Seq.sumBy fst
     let count = $"(x{count})".PadLeft(5)
 
     let sb = StringBuilder()
     sb.AppendLine $"{name} {typeline} {cost} {count}" |> ignore
 
-    for e in inventoryEditions do
-        let set = e.Set
-        let count = $"(x{e.Count})".PadLeft(5)
+    for (ct, c) in inventoryEditions do
+        let set = c.Set
+        let count = $"(x{ct})".PadLeft(5)
         sb.AppendLine $"  {count} {set}" |> ignore
 
     sb.ToString()
@@ -85,12 +85,12 @@ let command (query: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>
         ctx.Log.Information $"  Found {scryfallResults.Length} results"
 
         ctx.Log.Information $"Loading inventory from {ctx.Workspace.Path}..."
-        let rawInventory = Inventory.load ctx.Workspace.Cards
+        let! rawInventory = Inventory.loadInventoryFile ctx.Workspace.Cards
         ctx.Log.Information 
             (sprintf
                 "  Found %i editions, and %i total cards."
                 rawInventory.Length
-                (rawInventory |> Seq.sumBy (fun c -> c.Count))
+                (rawInventory |> Seq.sumBy fst)
             )
         let inventory =
             rawInventory
@@ -104,7 +104,7 @@ let command (query: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>
                 "  Found %i distinct cards, %i editions, and %i total cards."
                 joined.Length
                 (joined |> Seq.sumBy (fun (_, editions) -> editions.Length))
-                (joined |> Seq.sumBy (fun (_, editions) -> editions |> Seq.sumBy (fun e -> e.Count)))
+                (joined |> Seq.sumBy (fun (_, editions) -> editions |> Seq.sumBy fst))
             )
 
         ctx.Log.Information ""

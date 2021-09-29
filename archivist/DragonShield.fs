@@ -2,7 +2,7 @@
 
 open System
 open System.IO
-open Model
+open GamesFaix.MtgTools.Shared.Inventory
 
 (*
     DragonShield's .txt files are almost CSV files, except they don't quote values,

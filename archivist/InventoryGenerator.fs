@@ -1,6 +1,7 @@
 ﻿module GamesFaix.MtgTools.Archivist.InventoryGenerator
 
 open GamesFaix.MtgTools.Shared
+open GamesFaix.MtgTools.Shared.Inventory
 open Model
 open Context
 
@@ -55,7 +56,7 @@ let private saveManifest (inv: Inventory) (ctx: WorkspaceContext<Workspace.Works
 
 let private saveCards (inv: Inventory) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : unit Async =
     let path = ctx.Workspace.Inventory.Current.Cards
-    Csv.saveInventoryFile path inv.Cards
+    Inventory.saveInventoryFile path inv.Cards
 
 let generate (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : Result<unit, string> Async =
     async {
