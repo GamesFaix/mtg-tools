@@ -20,9 +20,9 @@ let command (args: Args ParseResults) (ctx: Context.Context) : CommandResult =
         match args.GetAllResults().Head with
         | Workspace args ->
             return! Shared.Cli.Workspace.command    
-                        Context.getWorkspace
+                        Shared.Context.getWorkspace
                         (fun dir -> async {
-                            do! Context.setWorkspace dir
+                            do! Shared.Context.setWorkspace dir
                             let workspace = Workspace.WorkspaceDirectory.create dir
                             FileSystem.createDirectoryIfMissing workspace.Inventory.Path
                             FileSystem.createDirectoryIfMissing workspace.Transactions.Path

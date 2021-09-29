@@ -1,19 +1,13 @@
 ﻿module GamesFaix.MtgTools.Scry.Context
 
 open Serilog
-open Workspace
 open GamesFaix.MtgTools
 open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
 
-type WorkspaceContext = {
-    Log : ILogger
-    Workspace : WorkspaceDirectory
-}
-
 type Context =
     | Empty of Shared.Context.EmptyContext
-    | Workspace of WorkspaceContext
+    | Workspace of WorkspaceContext<Workspace.WorkspaceDirectory>
 with    
     interface IContext with
         member this.Log =
