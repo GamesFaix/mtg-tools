@@ -11,6 +11,7 @@
     <Compile Include="Json.fs" />
     <Compile Include="FileSystem.fs" />
     <Compile Include="Types.fs" />
+    <Compile Include="Cli\Workspace.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
