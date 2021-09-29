@@ -5,6 +5,7 @@ open OpenQA.Selenium
 open OpenQA.Selenium.Chrome
 open OpenQA.Selenium.Support.UI
 open GamesFaix.MtgTools.Designer
+open GamesFaix.MtgTools.Shared
 
 let private loginUrl = "https://mtg.design/login"
 let private homeUrl = "https://mtg.design/home"

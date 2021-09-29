@@ -1,6 +1,6 @@
 ﻿module GamesFaix.MtgTools.Archivist.InventoryGenerator
 
-open System
+open GamesFaix.MtgTools.Shared
 open Model
 open Context
 

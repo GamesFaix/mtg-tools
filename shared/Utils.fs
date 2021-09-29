@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module GamesFaix.MtgTools.Archivist.Utils
+module GamesFaix.MtgTools.Shared.Utils
 
 module List =
 
@@ -11,4 +11,6 @@ module List =
                 results.AddRange ys
             return results |> Seq.toList
         }
+    
+    let any<'a> = List.isEmpty<'a> >> not
     

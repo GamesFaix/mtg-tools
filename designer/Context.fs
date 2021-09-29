@@ -1,6 +1,8 @@
 ﻿module GamesFaix.MtgTools.Designer.Context
 
 open Serilog
+open GamesFaix.MtgTools.Shared
+open GamesFaix.MtgTools.Shared.Context
 open Workspace
 
 (*
@@ -55,33 +57,28 @@ type Context =
     | Workspace of WorkspaceContext
     | User of UserContext
 with
-    member this.Log =
-        match this with
-        | Empty ctx -> ctx.Log
-        | Workspace ctx -> ctx.Log
-        | User ctx -> ctx.Log
-
-let logger =
-    LoggerConfiguration()
-        .MinimumLevel.Debug()
-        .WriteTo.Console()
-        .CreateLogger()
+    interface IContext with
+        member this.Log =
+            match this with
+            | Empty ctx -> ctx.Log
+            | Workspace ctx -> ctx.Log
+            | User ctx -> ctx.Log
 
 let loadContext () : Context Async = async {
     match! getWorkspace () with
     | None ->
-        return Context.Empty { Log = logger }
+        return Context.Empty { Log = Log.logger }
     | Some dir ->
         let workspace = Workspace.WorkspaceDirectory.create dir
         match! Auth.loadCookieFile workspace with
         | None ->
             return Context.Workspace {
-                Log = logger
+                Log = Log.logger
                 Workspace = workspace
             }
         | Some cookie ->
             return Context.User {
-                Log = logger
+                Log = Log.logger
                 Workspace = workspace
                 Cookie = cookie
             }

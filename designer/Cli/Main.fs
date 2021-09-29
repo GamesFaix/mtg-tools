@@ -1,12 +1,13 @@
 ﻿module GamesFaix.MtgTools.Designer.Cli.Main
 
 open Argu
-open GamesFaix.MtgTools.Designer.Cli
-open GamesFaix.MtgTools.Designer.Context
 open FSharpx.Reader
+open GamesFaix.MtgTools
+open GamesFaix.MtgTools.Designer
+open GamesFaix.MtgTools.Designer.Cli
 
 type Args =
-    | [<CliPrefix(CliPrefix.None)>] Workspace of Workspace.Args ParseResults
+    | [<CliPrefix(CliPrefix.None)>] Workspace of Shared.Cli.Workspace.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Login of Login.Args ParseResults
     //| [<CliPrefix(CliPrefix.None)>] Logout of Logout.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Set of Set.Args ParseResults
@@ -21,9 +22,14 @@ type Args =
             | Set _ -> "Performs operations on sets of cards."
             | Card _ -> "Performs operations on individual cards."
 
-let getJob (results: Args ParseResults) : Reader<Context, JobResult> =
+let getJob (results: Args ParseResults) : Reader<Context.Context, Shared.Types.CommandResult> =
     match results.GetAllResults().Head with
-    | Workspace results -> Workspace.getJob results
+    | Workspace args -> 
+        Shared.Cli.Workspace.command
+            Context.getWorkspace
+            Context.setWorkspace
+            args
+
     | Login results -> Login.getJob results
     //| Logout results -> failwith "Not implemented"
     | Set results -> Set.getJob results

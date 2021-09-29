@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Archivist.FileSystem
+﻿module GamesFaix.MtgTools.Shared.FileSystem
 
 open System.IO
 
@@ -19,10 +19,13 @@ let saveFileText (text: string) (path: string): unit Async =
     createDirectoryIfMissing (Path.GetDirectoryName path)
     File.WriteAllTextAsync(path, text) |> Async.AwaitTask
 
+let loadText (path: string) : string Async =
+    File.ReadAllTextAsync path |> Async.AwaitTask
+
 let loadFromJson<'a> (path: string) : 'a option Async =
     async {
         try
-            let! json = File.ReadAllTextAsync path |> Async.AwaitTask
+            let! json = loadText path
             let result = Json.deserialize json
             return Some result
         with

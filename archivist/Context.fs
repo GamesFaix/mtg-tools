@@ -1,6 +1,8 @@
 ﻿module GamesFaix.MtgTools.Archivist.Context
 
 open Serilog
+open GamesFaix.MtgTools.Shared
+open GamesFaix.MtgTools.Shared.Context
 open Workspace
 
 (*
@@ -44,25 +46,20 @@ type WorkspaceContext = {
 type Context =
     | Empty of EmptyContext
     | Workspace of WorkspaceContext
-with
-    member this.Log =
-        match this with
-        | Empty ctx -> ctx.Log
-        | Workspace ctx -> ctx.Log
-
-let logger =
-    LoggerConfiguration()
-        .MinimumLevel.Debug()
-        .WriteTo.Console()
-        .CreateLogger()
+with    
+    interface IContext with
+        member this.Log =
+            match this with
+            | Empty ctx -> ctx.Log
+            | Workspace ctx -> ctx.Log
 
 let loadContext () : Context Async = async {
     match! getWorkspace () with
     | None ->
-        return Context.Empty { Log = logger }
+        return Context.Empty { Log = Log.logger }
     | Some dir ->
         return Context.Workspace {
-            Log = logger
+            Log = Log.logger
             Workspace = Workspace.WorkspaceDirectory.create dir
         }
 }
