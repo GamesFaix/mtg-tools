@@ -7,27 +7,29 @@ open GamesFaix.MtgTools.Shared
 
 type Args =
     | [<CliPrefix(CliPrefix.None)>] Workspace of Shared.Cli.Workspace.Args ParseResults
-    | [<CliPrefix(CliPrefix.None)>] Query of string
+    | [<CliPrefix(CliPrefix.None)>] Find of string
+    | [<CliPrefix(CliPrefix.None)>] Collect of string
 
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Workspace _ -> "Gets or sets the workspace directory"
-            | Query _ -> "Queries inventory, using scryfall query syntax."
+            | Find _ -> "Finds all cards in inventory matching the given query, counting all printings of each card as equal."
+            | Collect _ -> "Finds all cards matching the given query and shows which are owned, counting each printing as unique."
 
 let command (args: Args ParseResults) (ctx: Context.Context) : CommandResult =
     async {
-        match args.GetAllResults().Head with
-        | Workspace args ->
+        match ctx, args.GetAllResults().Head with
+        | _, Workspace args ->
             return! Shared.Cli.Workspace.command    
                         Shared.Context.getWorkspace
                         Shared.Context.setWorkspace
                         args
                         ctx
-        | Query query -> 
-            match ctx with
-            | Context.Workspace ctx ->
-                return! QueryWithUnownedCards.command query ctx
-            | _ ->
-                return Error "This operation requires a workspace."
+        | Context.Workspace ctx, Find query -> 
+            return! Find.command query ctx
+        | Context.Workspace ctx, Collect query ->
+            return! Collect.command query ctx
+        | _ ->
+            return Error "This operation requires a workspace."    
     }

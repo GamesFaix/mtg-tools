@@ -1,4 +1,4 @@
-﻿module GamesFaix.MtgTools.Scry.Query
+﻿module GamesFaix.MtgTools.Scry.Collect
 
 open System
 open System.Linq
@@ -10,10 +10,13 @@ open GamesFaix.MtgTools.Shared.Inventory
 
 type ScryfallCard = ScryfallApi.Client.Models.Card
 type ScryfallSet = ScryfallApi.Client.Models.Set
+type CardWithSet = int * Card * ScryfallSet option
+type ResultCard = ScryfallCard * int * Card option
 
 let mergeSetData
     (sets: ScryfallSet list)
-    (rawInventory: CardCount list) =
+    (rawInventory: CardCount list) 
+    : CardWithSet list =
     let index = sets.ToDictionary((fun x -> x.Code), StringComparer.InvariantCultureIgnoreCase)
     rawInventory
     |> List.map (fun (ct, c) ->
@@ -22,57 +25,45 @@ let mergeSetData
         | _ -> (ct, c, None)
     )
 
-type InventoryCard = string * CardCount list
-
-let groupEditions (inventoryWithSets: (int * Card * ScryfallSet option) list) : InventoryCard list =
-    inventoryWithSets
-    |> List.groupBy (fun (ct, c, set) -> c.Name)
-    |> List.map (fun (name, printings) ->
-        let printings =
-            printings
-            |> List.sortBy (fun (_, _, set) ->
-                set
-                |> Option.bind (fun x -> x.ReleaseDate |> Option.ofNullable)
-                |> Option.defaultValue DateTime.MaxValue)
-            |> List.map (fun (ct, c, set) ->
-                match set with
-                | Some s -> (ct, { c with Set = $"{s.Name} ({s.Code.ToUpperInvariant()})" })
-                | None -> (ct, c)
-            )
-        (name, printings)
-    )
-
 let joinResults
     (scryfallResults: ScryfallCard list)
-    (inventory: InventoryCard list)
-    : (ScryfallCard * list<CardCount>) list =
-    Enumerable.Join(
+    (inventory: CardWithSet list)
+    : ResultCard list =
+
+    Enumerable.GroupJoin(
         scryfallResults,
         inventory,
-        (fun sc -> sc.Name.ToLowerInvariant()),
-        (fun (name, _) -> name.ToLowerInvariant()),
-        (fun sc (_, editions) -> (sc, editions))
+        (fun sc -> (sc.Name.ToLowerInvariant(), sc.Set.ToLowerInvariant())),
+        (fun (_, c, _) -> (c.Name.ToLowerInvariant(), c.Set.ToLowerInvariant())),
+        (fun sc cs -> (sc, cs))
+    )
+    |> Seq.collect (fun (sc, cs) -> 
+        let cs = cs |> Seq.toList
+        match cs with
+        | [] -> [(sc, 0, None)]
+        | _ -> cs |> List.map (fun (ct, c, set) -> (sc, ct, Some c))
     )
     |> Seq.toList
 
-let formatCardOutput (scryfallCard: ScryfallCard, inventoryEditions: CardCount list) : string =
+let formatCardOutput (result: ResultCard) : string =
+    let (scryfallCard, count, card) = result
     let name = scryfallCard.Name.PadRight(30)
     let typeline = scryfallCard.TypeLine.PadRight(25)
     let cost =
         Regex.Replace(scryfallCard.ManaCost, "{(\\d|W|U|B|R|G)}", "$1")
              .PadLeft(6)
-    let count = inventoryEditions |> Seq.sumBy fst
     let count = $"(x{count})".PadLeft(5)
 
     let sb = StringBuilder()
-    sb.AppendLine $"{name} {typeline} {cost} {count}" |> ignore
 
-    for (ct, c) in inventoryEditions do
-        let set = c.Set
-        let count = $"(x{ct})".PadLeft(5)
-        sb.AppendLine $"  {count} {set}" |> ignore
+    let checkbox = if card.IsNone then "[ ]" else "[x]"
+    let set = scryfallCard.Set.ToUpperInvariant()
+    let collectorsNo = scryfallCard.CollectorNumber.ToString().PadLeft(3, '0')
 
-    sb.ToString()
+    sb.AppendLine $"{checkbox} {name} {set} (#{collectorsNo}) {typeline} {cost} {count}" |> ignore
+
+    let str = sb.ToString()
+    str.Substring(0, str.Length - 1) // Remove trailing line
 
 let command (query: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>) : CommandResult =
     async {
@@ -81,6 +72,7 @@ let command (query: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>
         ctx.Log.Information $"  Found {sets.Length} results"
 
         ctx.Log.Information $"Searching Scryfall for \"{query}\"..."
+        let query = $"{query} unique:printings"
         let! scryfallResults = Scryfall.search query
         ctx.Log.Information $"  Found {scryfallResults.Length} results"
 
@@ -95,22 +87,28 @@ let command (query: string) (ctx: WorkspaceContext<Workspace.WorkspaceDirectory>
         let inventory =
             rawInventory
             |> mergeSetData sets
-            |> groupEditions
 
         ctx.Log.Information "Joining search results with inventory..."
-        let joined = joinResults scryfallResults inventory
+        let results = joinResults scryfallResults inventory
         ctx.Log.Information
             (sprintf 
-                "  Found %i distinct cards, %i editions, and %i total cards."
-                joined.Length
-                (joined |> Seq.sumBy (fun (_, editions) -> editions.Length))
-                (joined |> Seq.sumBy (fun (_, editions) -> editions |> Seq.sumBy fst))
+                "  Found %i distinct cards, and %i total cards."
+                results.Length
+                (results |> Seq.sumBy (fun (_, ct, _) -> ct))
             )
 
         ctx.Log.Information ""
 
-        for c in joined do
+        for c in results do
             ctx.Log.Information (formatCardOutput c)
+
+        let owned = results |> Seq.filter (fun (_, _, c) -> c.IsSome) |> Seq.length
+        let total = results |> Seq.length
+        let percent = (float owned) / (float total) * 100.0
+        let percent = percent.ToString("f2")
+
+        ctx.Log.Information ""
+        ctx.Log.Information $"{percent}%% owned ({owned} of {total})"
 
         return Ok ()
     }

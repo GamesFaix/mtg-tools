@@ -2,7 +2,7 @@
   "profiles": {
     "scry": {
       "commandName": "Project",
-      "commandLineArgs": "query t:Goblin"
+      "commandLineArgs": "collect \"s:6ED r:C\""
     }
   }
 }

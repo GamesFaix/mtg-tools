@@ -15,8 +15,8 @@
     <Compile Include="Workspace.fs" />
     <Compile Include="Context.fs" />
     <Compile Include="Scryfall.fs" />
-    <Compile Include="Query.fs" />
-    <Compile Include="QueryWithUnownedCards.fs" />
+    <Compile Include="Find.fs" />
+    <Compile Include="Collect.fs" />
     <Compile Include="Cli\Main.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
