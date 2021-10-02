@@ -49,9 +49,7 @@ let formatCardOutput (result: ResultCard) : string =
     let (scryfallCard, count, card) = result
     let name = scryfallCard.Name.PadRight(30)
     let typeline = scryfallCard.TypeLine.PadRight(25)
-    let cost =
-        Regex.Replace(scryfallCard.ManaCost, "{(\\d|W|U|B|R|G)}", "$1")
-             .PadLeft(6)
+    let cost = scryfallCard |> Scryfall.Card.getManaCost
     let count = $"(x{count})".PadLeft(5)
 
     let sb = StringBuilder()

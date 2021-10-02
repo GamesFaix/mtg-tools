@@ -4,6 +4,7 @@ open System
 open ScryfallApi.Client.Models
 open System.Net.Http
 open System.Linq
+open System.Text.RegularExpressions
 
 let private client = new HttpClient()
 client.BaseAddress <- Uri("https://api.scryfall.com/")
@@ -44,3 +45,13 @@ let getSets () =
 
         return results.Data |> Seq.toList
     }
+
+module Card =
+    let getManaCost (card: Card) : string =
+        match card.ManaCost with
+        | null ->
+            let costs = card.CardFaces |> Seq.map (fun f -> f.ManaCost) 
+            let str = String.Join(" / ", costs)            
+            Regex.Replace(str, "{(\\d|W|U|B|R|G)}", "$1")
+                 .PadLeft(6)
+        | cost -> cost

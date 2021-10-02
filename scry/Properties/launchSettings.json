@@ -2,7 +2,7 @@
   "profiles": {
     "scry": {
       "commandName": "Project",
-      "commandLineArgs": "collect \"s:6ED r:C\""
+      "commandLineArgs": "collect \"t:Legendary\""
     }
   }
 }
