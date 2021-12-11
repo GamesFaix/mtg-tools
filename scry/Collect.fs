@@ -3,7 +3,6 @@
 open System
 open System.Linq
 open System.Text
-open System.Text.RegularExpressions
 open GamesFaix.MtgTools.Shared
 open GamesFaix.MtgTools.Shared.Context
 open GamesFaix.MtgTools.Shared.Inventory
