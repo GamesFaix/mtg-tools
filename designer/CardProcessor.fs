@@ -60,8 +60,10 @@ let private getCardTemplate (card: CardDetails) : string =
     | _ -> "Gld"
 
 let private getAccent (card: CardDetails) : string =
-    if card.SpecialFrames = "token"
-    then "C"
+    if card.SpecialFrames = "token" then 
+        "C"
+    elif card.Type.Contains("Land") then
+        "C"
     else
         let colors = getColors card
         match colors.Length with
