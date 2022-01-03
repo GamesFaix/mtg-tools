@@ -47,6 +47,7 @@ let saveInventoryFile (path: string) (cards: CardCount list) : unit Async =
     async {
         let config = CsvConfiguration(CultureInfo.InvariantCulture)
         config.HasHeaderRecord <- true
+        config.ShouldQuote <- (fun args -> args.FieldType = typeof<string>)
 
         let cards = cards |> Seq.map toInventoryCsv |> Seq.sortBy (fun c -> c.Name)
         

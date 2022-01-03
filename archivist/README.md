@@ -71,19 +71,20 @@ A transaction represents a set of cards acquired, lost, or traded together. Each
 
 The current state of the inventory can be calculated by "adding" each transaction together.
 
-Each transaction folder has one `manifest.json` file and one or more `.csv` files.
+Each transaction folder has one or more data files and optionally a manifest file. A manifest can contain metadata about the transaction, as well as specify if some data files should be subtracted from the inventory instead of added. By default, each data file is assumed to be adding cards, since typically collections get bigger over time.
 
 ### `manifest.json`
 
 ```json
-// 01-m21-boosters/manifest.json
+// 2020-01-02-trade-with-jace/manifest.json
 {
     "id": 1,
-    "title": "M21 boosters", // required
-    "date": "2020-01-02", // required
+    "date": "2020-01-02", // if blank, date in folder name will be used
+    "title": "Trade with Jace", // if blank, part of folder name after date will be used
     "notes": "2x", // optional
     "cost": 8.00, // optional
-    "add": [ "cards" ] // optional, but either 'add' or 'remove' required
+    "addFiles": [ "cards" ], // optional
+    "removeFiles": [ "] // optional
 }
 ```
 
