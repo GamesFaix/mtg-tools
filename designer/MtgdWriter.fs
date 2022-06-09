@@ -114,9 +114,15 @@ let deleteCard (card: CardInfo) ctx =
     // Note: Cookie not really required. Security hole
     async {
         ctx.Log.Information $"\tDeleting {card.Set} - {card.Name}..."
-
+        
         let url = $"{baseUrl}/set/{card.Set}/i/{card.Id}/delete"
-        let! response = client.GetAsync url |> Async.AwaitTask
+
+        use request = new HttpRequestMessage ()
+        request.RequestUri <- Uri url
+        request.Method <- HttpMethod.Get
+        request.Headers.Add("Cookie", $"{ctx.Cookie.Name}={ctx.Cookie.Value}")
+
+        let! response = client.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
         then failwith "delete error" else ()
 
