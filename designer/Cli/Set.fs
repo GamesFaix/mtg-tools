@@ -141,6 +141,36 @@ module Pull =
             return Ok ()
         }
 
+module Push =
+    type Args =
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
+
+        interface IArgParserTemplate with
+            member this.Usage =
+                match this with
+                | Set _ -> "The set abbreviation."
+
+    let command (args: Args ParseResults) ctx =
+        let set = args.GetResult Set
+        let setDir = ctx.Workspace.Set(set)
+
+        async {
+            ctx.Log.Information $"Pushing local changes for set {set}..."
+            
+            ctx.Log.Information "\tLoading data file..."
+            let! cards = FileSystem.loadFromJson<CardDetails list> setDir.JsonDetails
+            
+            match cards with
+            | None -> 
+                ctx.Log.Error "Failed to load card details file."
+            | Some cards ->
+                let! cards = CardProcessor.processSet set cards ctx
+                do! MtgdWriter.saveCards SaveMode.Edit cards ctx
+                ctx.Log.Information "Done."
+
+            return Ok ()
+        }
+
 module Rename =
     type Args =
         | [<Mandatory; AltCommandLine("-f")>] From of string
@@ -182,6 +212,7 @@ type Args =
     | [<CliPrefix(CliPrefix.None)>] Delete of Delete.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Layout of Layout.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Pull of Pull.Args ParseResults
+    | [<CliPrefix(CliPrefix.None)>] Push of Push.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Rename of Rename.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Scrub of Scrub.Args ParseResults
 
@@ -193,6 +224,7 @@ type Args =
             | Delete _ -> "Deletes a set."
             | Layout _ -> "Creates and HTML layout for printing a set."
             | Pull _ -> "Downloads images and data for a set."
+            | Push _ -> "Pushes local data changes for a set."
             | Rename _ -> "Renames a set."
             | Scrub _ -> "Downloads cards, processes them, then posts updates. Fixes things like collectors numbers."
 
@@ -206,5 +238,6 @@ let command (args: Args ParseResults) = function
         | Delete results -> Delete.command results ctx
         | Layout results -> Layout.command results ctx
         | Pull results -> Pull.command results ctx
+        | Push results -> Push.command results ctx
         | Rename results -> Rename.command results ctx
         | Scrub results -> Scrub.command results ctx

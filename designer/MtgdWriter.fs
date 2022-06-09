@@ -68,7 +68,9 @@ let private renderCard (mode: SaveMode) (card: CardDetails) ctx =
 
         let! response = client.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
-        then failwith "render error" else ()
+        then 
+            ctx.Log.Error $"Failed to render {card.Name}"
+            //failwith "render error" else ()
 
         return ()
     }
@@ -88,7 +90,8 @@ let private shareCard (mode: SaveMode) (card: CardDetails) ctx =
 
         let! response = client.SendAsync request |> Async.AwaitTask
         if response.StatusCode >= HttpStatusCode.BadRequest
-        then failwith "share error" else ()
+        then 
+            ctx.Log.Error $"Failed to share {card.Name}"
 
         return ()
     }
