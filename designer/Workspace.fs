@@ -21,7 +21,7 @@ module SetDirectory =
             HtmlLayout = Path.Combine(path, "layout.html")
             JsonDetails = Path.Combine(path, "details.json")
             CenterFixes = Path.Combine(path, "center-fixes.json")
-            CardImage = (fun name -> Path.Combine(path, getCardFileName name))
+            CardImage = (fun name -> Path.Combine(path, "cards", getCardFileName name))
         }
 
 type WorkspaceDirectory = {
