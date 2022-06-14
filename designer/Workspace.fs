@@ -12,7 +12,8 @@ type SetDirectory = {
 }
 module SetDirectory =
     let getCardFileName (cardName: string) =
-        cardName.Replace(" ", "-").Replace("?", "-") + ".jpg"
+        let file = cardName.Replace(" ", "-").Replace("?", "-") + ".jpg"
+        Path.Combine("cards", file)
 
     let create (rootDir: string) (name: string) : SetDirectory =
         let path = Path.Combine(rootDir, name)
@@ -21,7 +22,7 @@ module SetDirectory =
             HtmlLayout = Path.Combine(path, "layout.html")
             JsonDetails = Path.Combine(path, "details.json")
             CenterFixes = Path.Combine(path, "center-fixes.json")
-            CardImage = (fun name -> Path.Combine(path, "cards", getCardFileName name))
+            CardImage = (fun name -> Path.Combine(path, getCardFileName name))
         }
 
 type WorkspaceDirectory = {
