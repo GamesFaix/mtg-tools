@@ -14,22 +14,22 @@ let private getCollectorNumberGroup (card: CardDetails) : CollectorNumberGroup =
     if card.SuperType.ToLower().Contains "token" then CollectorNumberGroup.Token
     elif card.Type.ToLower().Contains "land" then CollectorNumberGroup.Land
     else
-        let colors = getColors card
+        let colors =
+            match getColors card with
+            | [] -> card.ColorIndicator.ToCharArray() |> Seq.toList
+            | x -> x
 
-        match colors.Length with
-        | 0 -> if card.Type.Contains "Artifact"
-               then CollectorNumberGroup.Artifact
-               else CollectorNumberGroup.Colorless
-        | 1 -> match colors.Head with
-                | 'W' -> CollectorNumberGroup.White
-                | 'U' -> CollectorNumberGroup.Blue
-                | 'B' -> CollectorNumberGroup.Black
-                | 'R' -> CollectorNumberGroup.Red
-                | 'G' -> CollectorNumberGroup.Green
-                | _ -> failwith "invalid symbol"
-        | _ -> if card.ManaCost.Contains "/"
-               then CollectorNumberGroup.Hybrid
-               else CollectorNumberGroup.Multi
+        match colors with
+        | [] -> 
+            if card.Type.Contains "Artifact" then 
+                CollectorNumberGroup.Artifact
+            else CollectorNumberGroup.Colorless
+        | ['W'] -> CollectorNumberGroup.White
+        | ['U'] -> CollectorNumberGroup.Blue
+        | ['B'] -> CollectorNumberGroup.Black
+        | ['R'] -> CollectorNumberGroup.Red
+        | ['G'] -> CollectorNumberGroup.Green
+        | _ -> CollectorNumberGroup.Multi
 
 let private generateNumbers (cards: CardDetails seq) : (int * CardDetails) seq =
     cards
@@ -66,8 +66,9 @@ let private getAccent (card: CardDetails) : string =
         let colors = getColors card
         match colors.Length with
         | 0 ->
-            if card.LandOverlay = "A" then "C"
-            else card.LandOverlay
+            match card.LandOverlay with
+            | "" -> ""
+            | _ -> "C"
         | 1 -> colors.Head.ToString()
         | 2 ->
             if   colors.Contains 'W' && colors.Contains 'U' then "WU"
