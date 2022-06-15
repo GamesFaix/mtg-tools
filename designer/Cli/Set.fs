@@ -200,7 +200,7 @@ module MpcRender =
             let set = args.GetResult Set
             ctx.Log.Information $"Rendering set {set} for MPC..."
             let! cards = LocalStorage.loadSetDetails set ctx
-            do! MpcRender.padForMpc cards ctx
+            do! MpcRender.renderForMpc cards ctx
             ctx.Log.Information "Done."
             return Ok ()
         }

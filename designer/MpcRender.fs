@@ -8,9 +8,9 @@ open GamesFaix.MtgTools.Shared.Utils
 
 // See https://www.reddit.com/r/mpcproxies/comments/e9q1z7/complete_guide_to_image_sizing_for_mpc_or_other/
 let private mpcCardSize = Size(816, 1100)
+let private borderThickness = 32
 
-let private padImage (sourcePath: string) (targetPath: string) (borderColor: Color) = async {
-    let source = new Bitmap(sourcePath)
+let private pad (source: Bitmap) (borderColor: Color) = async {
     let target = new Bitmap(mpcCardSize.Width, mpcCardSize.Height)
 
     let offset = Point(
@@ -23,9 +23,39 @@ let private padImage (sourcePath: string) (targetPath: string) (borderColor: Col
     let g = Graphics.FromImage target
     g.FillRectangle(brush, background)
     g.DrawImage(source, offset)
-    target.Save targetPath
+    return target
+}
 
-    return ()
+let private eraseCorners (source: Bitmap) = async {
+    let copy = new Bitmap(source)
+    let g = Graphics.FromImage(copy)
+    g.DrawImage(source, Point(0,0))
+    
+    let range = seq {
+        for x in 0..borderThickness do
+            for y in 0..borderThickness do
+                yield x, y
+            for y in (source.Height-borderThickness-1)..(source.Height-1) do
+                yield x, y
+        for x in (source.Width-borderThickness-1)..(source.Width-1) do
+            for y in 0..borderThickness do
+                yield x, y
+            for y in (source.Height-borderThickness-1)..(source.Height-1) do
+                yield x, y
+    }
+
+    for x, y in range do
+        let px = copy.GetPixel(x, y)
+        let threshold = 25uy
+        let isCloseToWhite (c:Color) =
+            c.R > threshold &&
+            c.G > threshold &&
+            c.B > threshold
+        if isCloseToWhite px then
+            copy.SetPixel(x, y, Color.Transparent)
+        //else ()
+    
+    return copy
 }
 
 let private silver = Color.FromArgb(159, 159, 159)
@@ -37,7 +67,7 @@ let private getBorderColor (card: CardDetails) =
     | "gold" -> Color.Gold // TODO: Correct gold border color
     | _  -> failwith $"Invalid border color: {card.Border}"
 
-let padForMpc (cards: CardDetails list) (ctx: UserContext) = async {
+let renderForMpc (cards: CardDetails list) (ctx: UserContext) = async {
     for c in cards do
         ctx.Log.Information $"\tRendering {c.Name}..."
         let setDirectory = ctx.Workspace.Set c.Set
@@ -46,5 +76,8 @@ let padForMpc (cards: CardDetails list) (ctx: UserContext) = async {
         let sourcePath = setDirectory.Path /- sourceFile
         let targetPath = setDirectory.Path /- targetFile
         let borderColor = getBorderColor c
-        do! padImage sourcePath targetPath borderColor
+        use source = new Bitmap(sourcePath)
+        use! cornersRemoved = eraseCorners source
+        use! padded = pad cornersRemoved borderColor
+        padded.Save targetPath
 }
