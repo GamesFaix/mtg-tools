@@ -1,10 +1,9 @@
-﻿module Rendering
+﻿module GamesFaix.MtgTools.Designer.Watermarks.Rendering
 
 open Model
 open ScryfallApi.Client.Models
 open System.Drawing
 open System.Drawing.Imaging
-open FSharp.Control.Tasks
 open System.IO
 
 let maxWidth = 375
@@ -66,26 +65,26 @@ let private maskImage (source: Bitmap) (mask: Bitmap) =
 
     source
     
-let createWatermarkPng (card: Card) = task {
+let createWatermarkPng (card: Card) = async {
     let color = getColor card
     let path = FileSystem.watermarkPath card.Set color
     let maskPath = FileSystem.maskPath card.Set
     
-    let createMask () = task {
+    let createMask () = async {
         let svgPath = FileSystem.svgPath card.Set
         let mask = SvgHelper.renderAsLargeAsPossibleInContainerWithNoMargin svgPath (maxSize |> toFloat)
         mask.Save maskPath
         return mask
     }
 
-    let getOrCreateMask () = task {
+    let getOrCreateMask () = async {
         if File.Exists maskPath then
             return new Bitmap(maskPath)
         else
             return! createMask ()
     }
 
-    let createWatermark () = task {
+    let createWatermark () = async {
         use! mask = getOrCreateMask ()
         use background = loadBackground color
         use watermark = maskImage background mask :> Image

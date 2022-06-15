@@ -1,6 +1,5 @@
-﻿module MtgDesign
+﻿module GamesFaix.MtgTools.Designer.Watermarks.MtgDesign
 
-open FSharp.Control.Tasks
 open System.Net.Http
 open System.Text.RegularExpressions
 open System.IO
@@ -8,20 +7,20 @@ open System.Text.Json
 
 let private client = new HttpClient()
 
-let getCardNames (setCode: string) = task {
+let getCardNames (setCode: string) = async {
     let path = FileSystem.mtgdCardsDataPath ()
 
     let options = JsonSerializerOptions()
     options.WriteIndented <- true
 
-    let inner () = task {
+    let inner () = async {
         printfn "Parsing card names from MTG.design..."
-        let! html = client.GetStringAsync($"https://mtg.design/u/tautologist/{setCode}")
+        let! html = client.GetStringAsync($"https://mtg.design/u/tautologist/{setCode}") |> Async.AwaitTask
         let pattern = Regex "<li class=\"lazy\" id=\"(.*)\">"
         let matches = pattern.Matches html 
         let data = matches |> Seq.map (fun m -> m.Groups.[1].Value) |> Seq.toList
         let json = JsonSerializer.Serialize(data, options)
-        do! File.WriteAllTextAsync(path, json)     
+        do! File.WriteAllTextAsync(path, json) |> Async.AwaitTask
         return data
     }
 

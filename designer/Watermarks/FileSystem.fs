@@ -1,4 +1,4 @@
-﻿module FileSystem
+﻿module GamesFaix.MtgTools.Designer.Watermarks.FileSystem
 
 open Model
 

@@ -1,4 +1,4 @@
-﻿module SvgHelper
+﻿module GamesFaix.MtgTools.Designer.Watermarks.SvgHelper
 
 open System.Drawing
 open Svg

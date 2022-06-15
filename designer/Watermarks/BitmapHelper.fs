@@ -1,4 +1,4 @@
-﻿module BitmapHelper
+﻿module GamesFaix.MtgTools.Designer.Watermarks.BitmapHelper
 
 open System.Drawing
 open System.Drawing.Imaging

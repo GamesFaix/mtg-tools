@@ -34,7 +34,10 @@ let clearCardImages (setAbbrev: string) (ctx: UserContext) = async {
 // -----
 
 let saveMpcRender (card: CardInfo) (img: Bitmap) (ctx: UserContext) = async {
-    let path = (setDir card.Set ctx) /- "mpc" /- (escapeCardNameForPath card.Name) + ".jpg"
+    let path = 
+        (setDir card.Set ctx) 
+        /- "mpc" 
+        /- (escapeCardNameForPath card.Name) + ".jpg"
     img.Save path
 }
 
@@ -65,5 +68,3 @@ let saveSetLayout (html: string) (setAbbrev: string) (ctx: UserContext) = async 
     let path = (setDir setAbbrev ctx) /- "layout.html"
     do! FileSystem.saveFileText html path
 }
-
-// -----

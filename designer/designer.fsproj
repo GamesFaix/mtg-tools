@@ -10,6 +10,14 @@
 
   <ItemGroup>
     <Content Include="Properties\launchSettings.json" />
+    <Compile Include="Watermarks\Model.fs" />
+    <Compile Include="Watermarks\FileSystem.fs" />
+    <Compile Include="Watermarks\Scryfall.fs" />
+    <Compile Include="Watermarks\BitmapHelper.fs" />
+    <Compile Include="Watermarks\SvgHelper.fs" />
+    <Compile Include="Watermarks\Rendering.fs" />
+    <Compile Include="Watermarks\MtgDesign.fs" />
+    <Compile Include="Watermarks\Program.fs" />
     <Compile Include="Workspace.fs" />
     <Compile Include="Auth.fs" />
     <Compile Include="Context.fs" />
@@ -31,10 +39,12 @@
   <ItemGroup>
     <PackageReference Include="Argu" Version="6.1.1" />
     <PackageReference Include="FSharpx.Extras" Version="3.0.0" />
+    <PackageReference Include="ScryfallAPI.Client" Version="2.0.5" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="93.0.4577.6300" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="SgmlReader.NetStandard" Version="1.8.14.1" />
+    <PackageReference Include="Svg" Version="3.4.2" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.3" />
   </ItemGroup>
 

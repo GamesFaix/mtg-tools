@@ -1,4 +1,4 @@
-﻿module Model
+﻿module GamesFaix.MtgTools.Designer.Watermarks.Model
 
 type WatermarkColor =
     | White
