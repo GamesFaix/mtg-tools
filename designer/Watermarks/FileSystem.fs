@@ -1,6 +1,6 @@
 ﻿module GamesFaix.MtgTools.Designer.Watermarks.FileSystem
 
-open Model
+open GamesFaix.MtgTools.Designer.Model
 
 let private workingDir = "c:/github/jamesfaix/eccentria/bib/watermarks"
 

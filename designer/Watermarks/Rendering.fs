@@ -1,10 +1,10 @@
 ﻿module GamesFaix.MtgTools.Designer.Watermarks.Rendering
 
-open Model
 open ScryfallApi.Client.Models
 open System.Drawing
 open System.Drawing.Imaging
 open System.IO
+open GamesFaix.MtgTools.Designer.Model
 
 let maxWidth = 375
 let maxHeight = 235

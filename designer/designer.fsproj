@@ -21,7 +21,6 @@
     <Compile Include="Auditor.fs" />
     <Compile Include="Layout.fs" />
     <Compile Include="MpcRender.fs" />
-    <Compile Include="Watermarks\Model.fs" />
     <Compile Include="Watermarks\FileSystem.fs" />
     <Compile Include="Watermarks\Scryfall.fs" />
     <Compile Include="Watermarks\BitmapHelper.fs" />
