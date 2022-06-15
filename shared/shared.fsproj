@@ -11,7 +11,6 @@
     <Compile Include="Context.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="Types.fs" />
-    <Compile Include="Inventory.fs" />
     <Compile Include="Cli\Workspace.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
