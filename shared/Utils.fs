@@ -14,3 +14,5 @@ module List =
     
     let any<'a> = List.isEmpty<'a> >> not
     
+let (/-) (a:string) (b:string) =
+    System.IO.Path.Combine(a, b)
