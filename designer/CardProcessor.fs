@@ -101,17 +101,9 @@ let private processCardInner (cardsToCenter: string list) (card: CardDetails) : 
 
     card
 
-let private loadCardsToCenter (setAbbrev: string) (ctx: UserContext) =
-    async {
-        let path = ctx.Workspace.Set(setAbbrev).CenterFixes
-        match! FileSystem.loadFromJson<string list> path with
-        | Some cards -> return cards
-        | None -> return []
-    }
-
 let processCard (card: CardDetails) ctx =
     async {
-        let! cardsToCenter = loadCardsToCenter card.Set ctx
+        let! cardsToCenter = LocalStorage.loadSetCenterFixes card.Set ctx
         return processCardInner cardsToCenter card
     }
 
@@ -119,7 +111,7 @@ let processSet (setAbbrev: string) (cards: CardDetails list) (ctx: UserContext) 
     async {
         ctx.Log.Information "Processing cards..."
 
-        let! cardsToCenter = loadCardsToCenter setAbbrev ctx
+        let! cardsToCenter = LocalStorage.loadSetCenterFixes setAbbrev ctx
 
         ctx.Log.Information "\tCalculating properies..."
         let cards = cards |> List.map (processCardInner cardsToCenter)

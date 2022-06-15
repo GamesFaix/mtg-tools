@@ -14,13 +14,13 @@
     <Compile Include="Auth.fs" />
     <Compile Include="Context.fs" />
     <Compile Include="Model.fs" />
+    <Compile Include="LocalStorage.fs" />
     <Compile Include="MtgdReader.fs" />
     <Compile Include="MtgdWriter.fs" />
     <Compile Include="CardProcessor.fs" />
     <Compile Include="Auditor.fs" />
     <Compile Include="Layout.fs" />
     <Compile Include="MpcRender.fs" />
-    <Compile Include="LocalStorage.fs" />
     <Compile Include="Cli\Login.fs" />
     <Compile Include="Cli\Card.fs" />
     <Compile Include="Cli\Set.fs" />

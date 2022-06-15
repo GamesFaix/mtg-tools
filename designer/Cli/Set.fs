@@ -95,7 +95,7 @@ module Layout =
             ctx.Log.Information $"Creating HTML layout for set {set}..."
             let! cardInfos = MtgdReader.getSetCardInfos set ctx
             let html = Layout.createHtmlLayout cardInfos
-            do! FileSystem.saveFileText html (ctx.Workspace.Set(set).HtmlLayout)
+            do! LocalStorage.saveSetLayout html set ctx
             ctx.Log.Information "Done."
             return Ok ()
         }
@@ -111,7 +111,7 @@ module Pull =
 
     let command (args: Args ParseResults) ctx =
         let set = args.GetResult Set
-        let setDir = ctx.Workspace.Set(set)
+
 
         let downloadImage (card: CardInfo) =
             async {
@@ -126,9 +126,7 @@ module Pull =
 
             ctx.Log.Information $"\tSaving data file..."
             do! LocalStorage.saveSetDetails set details ctx
-
-            // Clear old images
-            do! FileSystem.deleteFilesInFolderMatching setDir.Path (fun f -> f.EndsWith ".jpg")
+            do! LocalStorage.clearCardImages set ctx
 
             // Download images
             do! details
@@ -151,8 +149,7 @@ module Push =
 
     let command (args: Args ParseResults) ctx =
         let set = args.GetResult Set
-        let setDir = ctx.Workspace.Set(set)
-
+        
         async {
             ctx.Log.Information $"Pushing local changes for set {set}..."
             

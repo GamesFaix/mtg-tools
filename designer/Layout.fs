@@ -2,7 +2,7 @@
 
 open System.Xml.Linq
 open Model
-open Workspace
+open GamesFaix.MtgTools.Shared.Utils
 
 // 1/64th less than 3.5 x 2.5
 let private cardHeightInches = 3.46875
@@ -22,7 +22,7 @@ let private style =
 let private name = XName.Get
 
 let private getImageTag (card: CardInfo) =
-    let file = SetDirectory.getCardFileName card.Name
+    let file = LocalStorage.cardImageRelativePath card
     XElement(name "img",
         XAttribute(name "src", file)
     )
