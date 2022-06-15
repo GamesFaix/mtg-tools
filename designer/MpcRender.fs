@@ -13,10 +13,11 @@ let private borderThickness = 32
 let private pad (source: Bitmap) (borderColor: Color) = async {
     let target = new Bitmap(mpcCardSize.Width, mpcCardSize.Height)
 
-    let offset = Point(
-        (target.Width - source.Width) / 2,
-        (target.Height - source.Height) / 2
-    )
+    let offset = 
+        Point(
+            (target.Width - source.Width) / 2,
+            (target.Height - source.Height) / 2
+        )
     let brush = new SolidBrush(borderColor)
     let background = Rectangle(0, 0, mpcCardSize.Width, mpcCardSize.Height)
     
@@ -71,13 +72,15 @@ let renderForMpc (cards: CardDetails list) (ctx: UserContext) = async {
     for c in cards do
         ctx.Log.Information $"\tRendering {c.Name}..."
         let setDirectory = ctx.Workspace.Set c.Set
-        let sourceFile = getCardFileName c.Name
-        let targetFile = getMpcCardFileName c.Name
-        let sourcePath = setDirectory.Path /- sourceFile
-        let targetPath = setDirectory.Path /- targetFile
-        let borderColor = getBorderColor c
+        
+        let sourcePath = setDirectory.Path /- (getCardFileName c.Name)
         use source = new Bitmap(sourcePath)
+
         use! cornersRemoved = eraseCorners source
+        
+        let borderColor = getBorderColor c
         use! padded = pad cornersRemoved borderColor
+        
+        let targetPath = setDirectory.Path /- (getMpcCardFileName c.Name)
         padded.Save targetPath
 }

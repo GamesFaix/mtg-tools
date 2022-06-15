@@ -2,7 +2,7 @@
   "profiles": {
     "designer": {
       "commandName": "Project",
-      "commandLineArgs": "set mpcrender bb5"
+      "commandLineArgs": "--help"
     }
   }
 }
