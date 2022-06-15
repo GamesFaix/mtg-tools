@@ -2,6 +2,7 @@
 
 open System.IO
 open System
+open GamesFaix.MtgTools.Shared.Utils
 
 type SetDirectory = {
     Path : string
@@ -11,18 +12,23 @@ type SetDirectory = {
     CardImage : string -> string
 }
 module SetDirectory =
-    let getCardFileName (cardName: string) =
-        let file = cardName.Replace(" ", "-").Replace("?", "-") + ".jpg"
-        Path.Combine("cards", file)
+    let private escapeCardNameForPath (cardName: string) =
+        cardName.Replace(" ", "-").Replace("?", "-")
 
+    let getCardFileName (cardName: string) =
+        "cards" /- (escapeCardNameForPath(cardName) + ".jpg")
+
+    let getMpcCardFileName (cardName: string) =
+        "mpc" /- (escapeCardNameForPath(cardName) + ".jpg")
+        
     let create (rootDir: string) (name: string) : SetDirectory =
-        let path = Path.Combine(rootDir, name)
+        let path = rootDir /- name
         {
             Path = path
-            HtmlLayout = Path.Combine(path, "layout.html")
-            JsonDetails = Path.Combine(path, "details.json")
-            CenterFixes = Path.Combine(path, "center-fixes.json")
-            CardImage = (fun name -> Path.Combine(path, getCardFileName name))
+            HtmlLayout = path /- "layout.html"
+            JsonDetails = path /- "details.json"
+            CenterFixes = path /- "center-fixes.json"
+            CardImage = (fun name -> path /- getCardFileName name)
         }
 
 type WorkspaceDirectory = {
@@ -40,7 +46,7 @@ module WorkspaceDirectory =
 
         {
             Path = rootDir
-            Cookie = Path.Combine(rootDir, "cookie.json")
-            Credentials = Path.Combine(rootDir, "credentials.json")
+            Cookie = rootDir /- "cookie.json"
+            Credentials = rootDir /- "credentials.json"
             Set = SetDirectory.create rootDir
         }
