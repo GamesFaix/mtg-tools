@@ -10,14 +10,6 @@
 
   <ItemGroup>
     <Content Include="Properties\launchSettings.json" />
-    <Compile Include="Watermarks\Model.fs" />
-    <Compile Include="Watermarks\FileSystem.fs" />
-    <Compile Include="Watermarks\Scryfall.fs" />
-    <Compile Include="Watermarks\BitmapHelper.fs" />
-    <Compile Include="Watermarks\SvgHelper.fs" />
-    <Compile Include="Watermarks\Rendering.fs" />
-    <Compile Include="Watermarks\MtgDesign.fs" />
-    <Compile Include="Watermarks\Program.fs" />
     <Compile Include="Workspace.fs" />
     <Compile Include="Auth.fs" />
     <Compile Include="Context.fs" />
@@ -29,6 +21,14 @@
     <Compile Include="Auditor.fs" />
     <Compile Include="Layout.fs" />
     <Compile Include="MpcRender.fs" />
+    <Compile Include="Watermarks\Model.fs" />
+    <Compile Include="Watermarks\FileSystem.fs" />
+    <Compile Include="Watermarks\Scryfall.fs" />
+    <Compile Include="Watermarks\BitmapHelper.fs" />
+    <Compile Include="Watermarks\SvgHelper.fs" />
+    <Compile Include="Watermarks\Rendering.fs" />
+    <Compile Include="Watermarks\MtgDesign.fs" />
+    <Compile Include="Watermarks\Program.fs" />
     <Compile Include="Cli\Login.fs" />
     <Compile Include="Cli\Card.fs" />
     <Compile Include="Cli\Set.fs" />
