@@ -25,6 +25,24 @@ let private copyOrRename (fromSet: string) (toSet: string) (mode: SaveMode) ctx 
         return Ok ()
     }
 
+let private pushOrInit (set: string) (mode: SaveMode) ctx =
+    async {
+        let action = if mode = SaveMode.Create then "Initializing" else "Pushing local changes for"
+        ctx.Log.Information $"{action} {set}..."
+    
+        ctx.Log.Information "\tLoading data file..."
+        let! cards = LocalStorage.loadSetDetails set ctx
+    
+        match cards with
+        | [] -> 
+            ctx.Log.Error "Failed to load card details file."
+        | cards ->
+            let! cards = CardProcessor.processSet set cards ctx
+            do! MtgdWriter.saveCards mode cards ctx
+            ctx.Log.Information "Done."
+
+        return Ok ()
+    }
 module Audit =
     type Args =
         | [<MainCommand; ExactlyOnce; Last>] Set of string
@@ -79,6 +97,19 @@ module Delete =
             ctx.Log.Information "Done."
             return Ok ()
         }
+
+module Init =
+    type Args =
+        | [<MainCommand; ExactlyOnce; Last>] Set of string
+
+        interface IArgParserTemplate with
+            member this.Usage =
+                match this with
+                | Set _ -> "The set abbreviation."
+
+    let command (args: Args ParseResults) ctx =
+        let set = args.GetResult Set
+        pushOrInit set SaveMode.Create ctx
 
 module Layout =
     type Args =
@@ -151,24 +182,7 @@ module Push =
 
     let command (args: Args ParseResults) ctx =
         let set = args.GetResult Set
-        let setDir = ctx.Workspace.Set(set)
-
-        async {
-            ctx.Log.Information $"Pushing local changes for set {set}..."
-            
-            ctx.Log.Information "\tLoading data file..."
-            let! cards = LocalStorage.loadSetDetails set ctx
-            
-            match cards with
-            | [] -> 
-                ctx.Log.Error "Failed to load card details file."
-            | cards ->
-                let! cards = CardProcessor.processSet set cards ctx
-                do! MtgdWriter.saveCards SaveMode.Edit cards ctx
-                ctx.Log.Information "Done."
-
-            return Ok ()
-        }
+        pushOrInit set SaveMode.Edit ctx
 
 module Rename =
     type Args =
@@ -228,6 +242,7 @@ type Args =
     | [<CliPrefix(CliPrefix.None)>] Audit of Audit.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Copy of Copy.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Delete of Delete.Args ParseResults
+    | [<CliPrefix(CliPrefix.None)>] Init of Init.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Layout of Layout.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] MpcRender of MpcRender.Args ParseResults
     | [<CliPrefix(CliPrefix.None)>] Pull of Pull.Args ParseResults
@@ -241,6 +256,7 @@ type Args =
             | Audit _ -> "Audits a set."
             | Copy _ -> "Copies a set."
             | Delete _ -> "Deletes a set."
+            | Init _ -> "Creates a new set on mtg.design from a local data file."
             | Layout _ -> "Creates and HTML layout for printing a set."
             | MpcRender _ -> "Pads images for MakePlayingCards.com"
             | Pull _ -> "Downloads images and data for a set."
@@ -256,6 +272,7 @@ let command (args: Args ParseResults) = function
         | Audit results -> Audit.command results ctx
         | Copy results -> Copy.command results ctx
         | Delete results -> Delete.command results ctx
+        | Init results -> Init.command results ctx
         | Layout results -> Layout.command results ctx
         | MpcRender results -> MpcRender.command results ctx
         | Pull results -> Pull.command results ctx
