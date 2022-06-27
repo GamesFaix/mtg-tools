@@ -7,10 +7,34 @@ open Workspace.SetDirectory
 open GamesFaix.MtgTools.Shared.Utils
 
 // See https://www.reddit.com/r/mpcproxies/comments/e9q1z7/complete_guide_to_image_sizing_for_mpc_or_other/
-let private mpcCardSize = Size(816, 1100)
+let private mpcCardSize = Size(802, 1097)
 let private borderThickness = 32
 
-let private pad (source: Bitmap) (borderColor: Color) = async {
+let private drawBlackBorderPad (g: Graphics) : unit =
+    use brush = new SolidBrush(Color.Black)
+    let background = Rectangle(0, 0, mpcCardSize.Width, mpcCardSize.Height)
+    g.FillRectangle(brush, background)
+
+let private drawSilverBorderPad (g: Graphics) : unit =
+    use topBrush = new SolidBrush(Color.FromArgb(159, 159, 159))
+    use bottomBrush = new SolidBrush(Color.Black)
+    
+    let bottomHeight = 320
+
+    let top = Rectangle(0, 0, mpcCardSize.Width, mpcCardSize.Height-bottomHeight)
+    let bottom = Rectangle(0, mpcCardSize.Height-bottomHeight, mpcCardSize.Width, bottomHeight)
+
+    g.FillRectangle(topBrush, top)
+    g.FillRectangle(bottomBrush, bottom)
+
+let private getDrawBorderPadStrategy (card: CardDetails) =
+    match card.Border with
+    | "black" -> drawBlackBorderPad
+    | "silver" -> drawSilverBorderPad
+    | "white" | "gold" -> failwith "Not implemented"
+    | _  -> failwith $"Invalid border color: {card.Border}"
+
+let private pad (source: Bitmap) (drawBorderPad: Graphics -> unit) = async {
     let target = new Bitmap(mpcCardSize.Width, mpcCardSize.Height)
 
     let offset = 
@@ -18,11 +42,9 @@ let private pad (source: Bitmap) (borderColor: Color) = async {
             (target.Width - source.Width) / 2,
             (target.Height - source.Height) / 2
         )
-    let brush = new SolidBrush(borderColor)
-    let background = Rectangle(0, 0, mpcCardSize.Width, mpcCardSize.Height)
     
     let g = Graphics.FromImage target
-    g.FillRectangle(brush, background)
+    drawBorderPad g
     g.DrawImage(source, offset)
     return target
 }
@@ -59,15 +81,6 @@ let private eraseCorners (source: Bitmap) = async {
     return copy
 }
 
-let private silver = Color.FromArgb(159, 159, 159)
-let private getBorderColor (card: CardDetails) =
-    match card.Border with
-    | "black" -> Color.Black
-    | "white" -> Color.White
-    | "silver" -> silver
-    | "gold" -> Color.Gold // TODO: Correct gold border color
-    | _  -> failwith $"Invalid border color: {card.Border}"
-
 let renderForMpc (cards: CardDetails list) (ctx: UserContext) = async {
     for c in cards do
         ctx.Log.Information $"\tRendering {c.Name}..."
@@ -78,8 +91,8 @@ let renderForMpc (cards: CardDetails list) (ctx: UserContext) = async {
 
         use! cornersRemoved = eraseCorners source
         
-        let borderColor = getBorderColor c
-        use! padded = pad cornersRemoved borderColor
+        let drawBorderPad = getDrawBorderPadStrategy c
+        use! padded = pad cornersRemoved drawBorderPad
         
         let targetPath = setDirectory.Path /- (getMpcCardFileName c.Name)
         padded.Save targetPath
