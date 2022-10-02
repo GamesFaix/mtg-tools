@@ -11,7 +11,7 @@ let getColors (card: CardDetails) : char list =
     card.ManaCost.Intersect ['W';'U';'B';'R';'G'] |> Seq.toList
 
 let private getCollectorNumberGroup (card: CardDetails) : CollectorNumberGroup =
-    if card.SuperType.ToLower().Contains "token" then CollectorNumberGroup.Token
+    if card.SuperType.ToLower().Contains "token" || card.SuperType.ToLower().Contains "emblem" then CollectorNumberGroup.Token
     elif card.Type.ToLower().Contains "land" then CollectorNumberGroup.Land
     else
         let colors =
