@@ -9,6 +9,7 @@ type SetDirectory = {
     HtmlLayout : string
     JsonDetails : string
     CenterFixes : string
+    NumberFixes : string
     CardImage : string -> string
 }
 module SetDirectory =
@@ -28,6 +29,7 @@ module SetDirectory =
             HtmlLayout = path /- "layout.html"
             JsonDetails = path /- "details.json"
             CenterFixes = path /- "center-fixes.json"
+            NumberFixes = path /- "number-fixes.json"
             CardImage = (fun name -> path /- getCardFileName name)
         }
 

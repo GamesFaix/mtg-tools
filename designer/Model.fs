@@ -71,3 +71,8 @@ type CollectorNumberGroup =
     | Artifact = 8
     | Land = 9
     | Token = 10
+
+type NumberFix = {
+    name: string
+    backOf: string
+}

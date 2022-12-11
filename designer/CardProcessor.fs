@@ -39,15 +39,36 @@ let private generateNumbers (cards: CardDetails seq) : (int * CardDetails) seq =
     |> Seq.indexed
     |> Seq.map (fun (n, c) -> (n+1, c))
 
-let private generateAndApplyNumbers (cards: CardDetails list) : CardDetails list =
-    let count = cards.Length
-    generateNumbers cards
-    |> Seq.map (fun (n, c) ->
-        { c with
-            Number = n.ToString().PadLeft(count.ToString().Length, '0')
-            Total = count.ToString()
-        })
-    |> Seq.toList
+let private generateAndApplyNumbers (numberFixes: NumberFix list) (cards: CardDetails list) : CardDetails list =
+    let isBack card = numberFixes |> Seq.exists (fun nf -> nf.name = card.Name)
+    let fronts = cards |> List.filter (not << isBack)
+    let backs = cards |> List.filter isBack
+
+    let count = fronts.Length
+
+    let frontsWithNumbers =
+        generateNumbers fronts
+        |> Seq.map (fun (n, c) ->
+            { c with
+                Number = n.ToString().PadLeft(count.ToString().Length, '0')
+                Total = count.ToString()
+            })
+        |> Seq.toList
+
+    let backWithNumbers =
+        backs
+        |> Seq.map (fun c -> 
+            let fix = numberFixes |> Seq.find (fun fix -> fix.name = c.Name)
+            let front = frontsWithNumbers |> List.find (fun front -> front.Name = fix.backOf)
+            { c with
+                Number = front.Number
+                Total = count.ToString()            
+            }
+        )
+        |> Seq.toList
+
+    frontsWithNumbers @ backWithNumbers
+    |> List.sortBy (fun c -> c.Number)
 
 let private getCardTemplate (card: CardDetails) : string =
     let colors = getColors card
@@ -109,6 +130,14 @@ let private loadCardsToCenter (setAbbrev: string) (ctx: UserContext) =
         | None -> return []
     }
 
+let private loadNumberFixes (setAbbrev: string) (ctx: UserContext) =
+    async {
+        let path = ctx.Workspace.Set(setAbbrev).NumberFixes
+        match! FileSystem.loadFromJson<NumberFix list> path with
+        | Some fixes -> return fixes
+        | None -> return []
+    }
+
 let processCard (card: CardDetails) ctx =
     async {
         let! cardsToCenter = loadCardsToCenter card.Set ctx
@@ -120,12 +149,13 @@ let processSet (setAbbrev: string) (cards: CardDetails list) (ctx: UserContext) 
         ctx.Log.Information "Processing cards..."
 
         let! cardsToCenter = loadCardsToCenter setAbbrev ctx
+        let! numberFixes = loadNumberFixes setAbbrev ctx
 
         ctx.Log.Information "\tCalculating properies..."
         let cards = cards |> List.map (processCardInner cardsToCenter)
 
         ctx.Log.Information "\tGenerating card numbers..."
-        let cards = cards |> generateAndApplyNumbers
+        let cards = cards |> generateAndApplyNumbers numberFixes
 
         ctx.Log.Information "\tCards processed."
         return cards
